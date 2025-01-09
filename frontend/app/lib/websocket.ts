@@ -14,7 +14,10 @@ export const useWebsocket = ({
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://127.0.0.1:4000");
+    const isLocalhost = location.hostname.includes(":3000");
+    const base = isLocalhost ? location.hostname : `api.${location.hostname}`;
+    console.log(`ws://${base}:4000`);
+    const ws = new WebSocket(`ws://${base}:4000`);
 
     ws.onopen = () => {
       console.info("WebSocket connected");
