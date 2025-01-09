@@ -7,7 +7,7 @@ import {
   getEntryDetails,
   getExampleSentences,
   getParts,
-} from "./common";
+} from "./common.js";
 
 import OpenAI from "openai";
 import express from "express";
