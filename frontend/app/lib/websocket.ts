@@ -15,9 +15,11 @@ export const useWebsocket = ({
 
   useEffect(() => {
     const isLocalhost = location.hostname.includes(":3000");
-    const base = isLocalhost ? location.hostname : `api.${location.hostname}`;
-    console.log(`ws://${base}:4000`);
-    const ws = new WebSocket(`ws://${base}:4000`);
+    const url = isLocalhost
+      ? `ws://${location.hostname}:4000`
+      : `wss://api.${location.hostname}:4000`;
+    console.log(url);
+    const ws = new WebSocket(url);
 
     ws.onopen = () => {
       console.info("WebSocket connected");
