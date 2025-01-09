@@ -11,7 +11,7 @@ import {
 
 import OpenAI from "openai";
 import express from "express";
-import http from "http";
+import https from "https";
 
 interface ApiPayload {
   learningLang: string;
@@ -86,7 +86,14 @@ const openai = new OpenAI({
 });
 
 const app = express();
-const server = http.createServer(app);
+
+// Load SSL key and cert from .env
+const options = {
+  key: process.env.SSL_KEY,
+  cert: process.env.SSL_CERT,
+};
+
+const server = https.createServer(options, app);
 
 // WebSocket setup
 const wss = new WebSocketServer({ server });
@@ -111,7 +118,7 @@ wss.on("connection", (ws) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on https://localhost:${PORT}`);
 });
