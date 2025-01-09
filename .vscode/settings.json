@@ -1,0 +1,10 @@
+{
+  "cSpell.words": ["DEEPSEEK"],
+  "workbench.colorCustomizations": {
+    "statusBar.background": "#6E4A9E", // Deep purple
+    "statusBar.foreground": "#FFFFFF", // White for contrast
+    "statusBarItem.hoverBackground": "#9B72CF", // Lighter purple for hover
+    "statusBarItem.remoteBackground": "#4A2D6E", // Darker purple for remote background
+    "statusBarItem.remoteForeground": "#FFFFFF" // White for remote foreground
+  }
+}
