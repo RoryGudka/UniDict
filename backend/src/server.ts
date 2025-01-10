@@ -106,7 +106,7 @@ wss.on("connection", (ws) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Server is running on http://127.0.0.1:${PORT}`);
 });
