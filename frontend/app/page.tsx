@@ -205,7 +205,13 @@ const App: React.FC = () => {
               </ReactMarkdown>
             )}
             {parts && parts.includes("|") && (
-              <Box pb="16px" display="flex" justifyContent="center" gap="8px">
+              <Box
+                pb="16px"
+                display="flex"
+                justifyContent="center"
+                gap="8px"
+                flexWrap="wrap"
+              >
                 {parts.split("|").map((part, i) => (
                   <span key={i} style={{ fontSize: "32px" }}>
                     <u>{part}</u>

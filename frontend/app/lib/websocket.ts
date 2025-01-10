@@ -14,10 +14,10 @@ export const useWebsocket = ({
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const isLocalhost = location.hostname.includes(":3000");
+    const isLocalhost = location.href.includes(":3000");
     const url = isLocalhost
       ? `ws://${location.hostname}:4000`
-      : `wss://api.${location.hostname}:4000`;
+      : `wss://api.${location.hostname.split(".")[1]}:4000`;
     console.log(url);
     const ws = new WebSocket(url);
 

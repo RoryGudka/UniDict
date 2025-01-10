@@ -9,8 +9,8 @@ import {
   getParts,
 } from "./common.js";
 
-import OpenAI from "openai";
 import express from "express";
+import http from "http";
 import https from "https";
 
 interface ApiPayload {
@@ -79,23 +79,8 @@ const generateExampleSentences = async (ws: WebSocket, payload: ApiPayload) => {
   }
 };
 
-// Initialize OpenAI client with DeepSeek API configuration
-const openai = new OpenAI({
-  baseURL: "https://api.deepseek.com", // DeepSeek API endpoint
-  apiKey: process.env.DEEPSEEK_API_KEY, // Set your DeepSeek API key in .env
-});
-
 const app = express();
-
-// Load SSL key and cert from .env
-const options = {
-  key: process.env.SSL_KEY,
-  cert: process.env.SSL_CERT,
-};
-
-const server = https.createServer(options, app);
-
-// WebSocket setup
+const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
@@ -120,5 +105,5 @@ wss.on("connection", (ws) => {
 // Start the server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
-  console.log(`Server is running on https://localhost:${PORT}`);
+  console.log(`Server is running on http://127.0.0.1:${PORT}`);
 });
