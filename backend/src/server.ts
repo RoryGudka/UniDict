@@ -80,7 +80,10 @@ const generateExampleSentences = async (ws: WebSocket, payload: ApiPayload) => {
 };
 
 const app = express();
-const server = http.createServer(app);
+const server =
+  process.env.ENVIRONMENT === "local"
+    ? http.createServer(app)
+    : https.createServer(app);
 const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
