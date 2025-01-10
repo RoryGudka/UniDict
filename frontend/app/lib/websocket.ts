@@ -17,7 +17,7 @@ export const useWebsocket = ({
     const isLocalhost = location.href.includes(":3000");
     const url = isLocalhost
       ? `ws://${location.hostname}:4000`
-      : `wss://api.${location.hostname.split(".")[1]}:4000`;
+      : `wss://api.${location.hostname.replace("www.", "")}:4000`;
     console.log(url);
     const ws = new WebSocket(url);
 
