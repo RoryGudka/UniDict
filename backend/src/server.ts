@@ -11,7 +11,6 @@ import {
 
 import express from "express";
 import http from "http";
-import https from "https";
 
 interface ApiPayload {
   learningLang: string;
@@ -79,29 +78,48 @@ const generateExampleSentences = async (ws: WebSocket, payload: ApiPayload) => {
   }
 };
 
+// Express app setup
 const app = express();
-const server =
-  process.env.ENVIRONMENT === "local"
-    ? http.createServer(app)
-    : https.createServer(app);
-const wss = new WebSocketServer({ server });
+const server = http.createServer(app);
 
+// WebSocket server setup
+const wss = new WebSocketServer({ noServer: true });
+
+// Handle HTTP upgrade requests
+server.on("upgrade", (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit("connection", ws, request);
+  });
+});
+
+// WebSocket connection handler
 wss.on("connection", (ws) => {
   console.log("New WebSocket client connected");
 
   ws.on("message", async (message) => {
     console.log(`Received: ${message}`);
-    const { api, ...payload } = JSON.parse(message.toString()) as ApiRequest;
+    try {
+      const { api, ...payload } = JSON.parse(message.toString()) as ApiRequest;
 
-    if (api === "search") {
-      await search(ws, payload);
-    } else if (api === "generate_example_sentences") {
-      await generateExampleSentences(ws, payload);
+      if (api === "search") {
+        await search(ws, payload);
+      } else if (api === "generate_example_sentences") {
+        await generateExampleSentences(ws, payload);
+      } else {
+        ws.send("Error: Invalid API request");
+      }
+    } catch (error) {
+      console.error("Error processing WebSocket message:", error);
+      ws.send("Error: Invalid message format");
     }
   });
 
   ws.on("close", () => {
     console.log("WebSocket client disconnected");
+  });
+
+  ws.on("error", (error) => {
+    console.error("WebSocket error:", error);
   });
 });
 
