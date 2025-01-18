@@ -5,6 +5,7 @@ import { CiSearch, CiUndo } from "react-icons/ci";
 interface Props {
   onSend: (search: string) => void;
 }
+
 const SearchInput: React.FC<Props> = ({ onSend }) => {
   const [search, setSearch] = useState("");
 
@@ -21,7 +22,10 @@ const SearchInput: React.FC<Props> = ({ onSend }) => {
   };
 
   const handleKeydown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleSend();
+    if (e.key === "Enter") {
+      handleSend();
+      e.preventDefault();
+    }
   };
 
   return (
@@ -32,20 +36,27 @@ const SearchInput: React.FC<Props> = ({ onSend }) => {
         onChange={handleChange}
         onKeyDown={handleKeydown}
         placeholder="Enter a word or phrase"
+        multiline
         sx={{
           fontFamily: "Noto Sans JP",
-          fontSize: "20px",
           lineHeight: 1,
-          "& input": { py: "13px" },
+          bgcolor: "#f3f3f3",
+          borderRadius: "24px",
+          border: "none",
+          outline: "none",
+          boxShadow: "none",
+          pr: "90px",
+          "& input": { py: "13px", pr: "36px" },
+          "& fieldset": { border: "none" },
         }}
       />
       <Box
         sx={{
           position: "absolute",
           right: "54px",
-          top: "8px",
-          width: "38px",
-          height: "38px",
+          top: "8.5px",
+          width: "32px",
+          height: "32px",
           display: search ? "flex" : "none",
           justifyContent: "center",
           alignItems: "center",
@@ -53,25 +64,26 @@ const SearchInput: React.FC<Props> = ({ onSend }) => {
         }}
         onClick={handleReset}
       >
-        <CiUndo size="28px" />
+        <CiUndo size="24px" />
       </Box>
       <Box
         sx={{
           position: "absolute",
-          right: "8px",
-          top: "8px",
-          bgcolor: "rgba(0, 0, 0, 0.1)",
-          width: "38px",
-          height: "38px",
+          right: "8.5px",
+          top: "8.5px",
+          bgcolor: "#4e6cf9",
+          color: "white",
+          width: "32px",
+          height: "32px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          borderRadius: "4px",
+          borderRadius: "38px",
           cursor: "pointer",
         }}
         onClick={handleSend}
       >
-        <CiSearch size="28px" />
+        <CiSearch size="24px" />
       </Box>
     </Box>
   );

@@ -2,15 +2,10 @@ import { useEffect, useState } from "react";
 
 interface UseWebsocketProps {
   onMessage: (message: string) => void;
-  onPhase: (phase: string) => void;
   onError: (event: Event) => void;
 }
 
-export const useWebsocket = ({
-  onMessage,
-  onPhase,
-  onError,
-}: UseWebsocketProps) => {
+export const useWebsocket = ({ onMessage, onError }: UseWebsocketProps) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
@@ -18,7 +13,6 @@ export const useWebsocket = ({
     const url = isLocalhost
       ? `ws://${location.hostname}:4000`
       : `wss://api.${location.hostname.replace("www.", "")}`;
-    console.log(url);
     const ws = new WebSocket(url);
 
     ws.onopen = () => {
@@ -34,10 +28,7 @@ export const useWebsocket = ({
   useEffect(() => {
     if (socket) {
       socket.onmessage = (event) => {
-        const data = event.data as string;
-        if (data.startsWith("[") && data.endsWith("]") && data.length > 2) {
-          onPhase(data);
-        } else onMessage(data);
+        onMessage(event.data as string);
       };
 
       socket.onclose = () => {
@@ -50,7 +41,7 @@ export const useWebsocket = ({
         onError(error);
       };
     }
-  }, [socket, onMessage, onPhase, onError]);
+  }, [socket, onMessage, onError]);
 
   return { socket };
 };

@@ -1,7 +1,7 @@
 import { BottomNavigation, BottomNavigationAction, Box } from "@mui/material";
 import { CiClock1, CiHome, CiSearch, CiSettings } from "react-icons/ci";
 
-type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
+import { SetState } from "@/lib/model";
 
 interface Props {
   tab: string;
