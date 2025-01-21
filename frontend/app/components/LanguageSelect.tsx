@@ -1,4 +1,10 @@
-import { Box, Collapse, IconButton, OutlinedInput } from "@mui/material";
+import {
+  Box,
+  Collapse,
+  IconButton,
+  OutlinedInput,
+  Skeleton,
+} from "@mui/material";
 import React, { ChangeEvent, useEffect, useState } from "react";
 
 import { CiGlobe } from "react-icons/ci";
@@ -23,6 +29,11 @@ const LanguageSelect: React.FC<Props> = ({
   const [cookies, setCookie] = useCookies(["languages"]);
   const [localNativeLang, setLocalNativeLang] = useState(nativeLang);
   const [localLearningLang, setLocalLearningLang] = useState(learningLang);
+  const [isFirstRender, setIsFirstRender] = useState(true);
+
+  useEffect(() => {
+    setIsFirstRender(false);
+  }, []);
 
   useEffect(() => {
     if (cookies.languages?.learning && cookies.languages?.native) {
@@ -31,7 +42,7 @@ const LanguageSelect: React.FC<Props> = ({
       setLearningLang(cookies.languages.learning);
       setLocalLearningLang(cookies.languages.learning);
     }
-  }, []);
+  }, [cookies, setLearningLang, setNativeLang]);
 
   useDebouncedEffect(
     () => {
@@ -41,7 +52,6 @@ const LanguageSelect: React.FC<Props> = ({
         native: localNativeLang,
         learning: localLearningLang,
       });
-      console.log("test");
     },
     500,
     [localNativeLang, localLearningLang]
@@ -68,11 +78,16 @@ const LanguageSelect: React.FC<Props> = ({
         width="100%"
         pb="16px"
       >
-        <h1 style={{ fontSize: "22px" }}>Uni-Dict</h1>
+        <h1 style={{ fontSize: "16px" }}>Uni-Dictionary</h1>
         <Box display="flex" alignItems="center" gap="8px">
-          <span style={{ color: "rgba(0, 0, 0, 0.54)" }}>
-            {nativeLang} ⟷ {learningLang}
-          </span>
+          {isFirstRender ? (
+            <Skeleton width="150px" />
+          ) : (
+            <span style={{ color: "rgba(0, 0, 0, 0.54)" }}>
+              {localNativeLang} ⟷ {localLearningLang}
+            </span>
+          )}
+
           <IconButton onClick={handleToggleLanguageOpen}>
             <CiGlobe size="28px" />
           </IconButton>

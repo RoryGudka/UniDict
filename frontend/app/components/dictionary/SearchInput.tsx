@@ -46,7 +46,7 @@ const SearchInput: React.FC<Props> = ({ onSend }) => {
           outline: "none",
           boxShadow: "none",
           pr: "90px",
-          "& input": { py: "13px", pr: "36px" },
+          "& textarea": { height: search ? undefined : "19px" },
           "& fieldset": { border: "none" },
         }}
       />
@@ -69,8 +69,8 @@ const SearchInput: React.FC<Props> = ({ onSend }) => {
       <Box
         sx={{
           position: "absolute",
-          right: "8.5px",
-          top: "8.5px",
+          right: "9px",
+          top: "9px",
           bgcolor: "#4e6cf9",
           color: "white",
           width: "32px",

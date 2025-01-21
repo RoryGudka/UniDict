@@ -190,11 +190,11 @@ const DictionaryPage: React.FC<Props> = ({
           <LoadingSkeleton />
         ) : (
           <Box color="#888888" pt="24px">
-            Uni-Dict is an AI powered universal dictionary intended to be used
-            as a tool for learning languages. Get dynamic dictionary entries in
-            any format you need, expand on them with custom information buttons,
-            and chat with Deepseek about them to gain a deep understanding of
-            any words or phrases you want to learn.
+            Uni-Dictionary is an AI powered universal dictionary intended to be
+            used as a tool for learning languages. Get dynamic dictionary
+            entries in any format you need, expand on them with custom
+            information buttons, and chat with Deepseek about them to gain a
+            deep understanding of any words or phrases you want to learn.
           </Box>
         )}
       </div>
