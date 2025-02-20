@@ -20,6 +20,7 @@ export const getParts = async (
   onChunk: (chunk: string) => void
 ) => {
   let message = "";
+  let temp = "";
   let parts: { id: string; value: string }[] = [];
 
   const addPart = (value: string) => {
@@ -52,12 +53,13 @@ export const getParts = async (
   for await (const chunk of stream) {
     const content = chunk.choices[0]?.delta?.content;
     message += content;
-    if (message.includes("|")) {
-      addPart(message.split("|")[0]);
-      message = message.split("|")[1];
+    temp += content;
+    if (temp.includes("|")) {
+      addPart(temp.split("|")[0]);
+      temp = temp.split("|")[1];
     }
   }
-  if (message) addPart(message);
+  if (temp) addPart(temp);
 
   return message.split("|");
 };
@@ -69,6 +71,7 @@ export const getEntries = async (
   onChunk: (chunk: string) => void
 ) => {
   let message = "";
+  let temp = "";
   let entries: { id: string; value: string }[] = [];
 
   const addEntry = (value: string) => {
@@ -98,12 +101,13 @@ export const getEntries = async (
   for await (const chunk of stream) {
     const content = chunk.choices[0]?.delta?.content;
     message += content;
-    if (message.includes("|")) {
-      addEntry(message.split("|")[0]);
-      message = message.split("|")[1];
+    temp += content;
+    if (temp.includes("|")) {
+      addEntry(temp.split("|")[0]);
+      temp = temp.split("|")[1];
     }
   }
-  if (message) addEntry(message);
+  if (temp) addEntry(temp);
 
   return entries;
 };
@@ -237,25 +241,31 @@ export const getConversation = async (
   }
 };
 
-export const getDetails = async (
+export const getTranslation = async (
+  requestId: string,
   content: string,
-  source: string,
-  target: string,
+  learningLang: string,
+  nativeLang: string,
   onChunk: (chunk: string) => void
 ) => {
+  const addDetailSegment = (value: string) => {
+    onChunk(`${requestId}:GET_TRANSLATION:${value}`);
+  };
+
   const stream = await openai.chat.completions.create({
     model: "deepseek-chat",
     messages: [
       {
         role: "system",
-        content: `You are a universal dictionary. Generate detailed dictionary entries for the given word or phrase. Use markdown formatting for headings, definitions, examples, synonyms, and related terms. Be concise but thorough.\n\nSource language: ${source}\nTarget language: ${target}`,
+        content: `You are a translator for a universal dictionary application. Your goal is to assist the user, whose native language is ${nativeLang}, in learning ${learningLang}. If their native language is not English, do not respond in English. Give a translation for the following phrase or sentence, explain any words or grammar patterns that might be confusing. Be concise but thorough.\n\nUser learning language: ${learningLang}\nUser native language: ${nativeLang}`,
       },
       { role: "user", content },
     ],
     stream: true,
   });
+
   for await (const chunk of stream) {
     const content = chunk.choices[0]?.delta?.content;
-    if (content) onChunk(content);
+    if (content) addDetailSegment(content);
   }
 };

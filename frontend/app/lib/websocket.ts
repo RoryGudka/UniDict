@@ -7,6 +7,7 @@ interface UseWebsocketProps {
 
 export const useWebsocket = ({ onMessage, onError }: UseWebsocketProps) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
 
   useEffect(() => {
     const isLocalhost = location.href.includes(":3000");
@@ -23,7 +24,7 @@ export const useWebsocket = ({ onMessage, onError }: UseWebsocketProps) => {
     return () => {
       ws.close();
     };
-  }, []);
+  }, [reconnectAttempt]);
 
   useEffect(() => {
     if (socket) {
@@ -43,5 +44,9 @@ export const useWebsocket = ({ onMessage, onError }: UseWebsocketProps) => {
     }
   }, [socket, onMessage, onError]);
 
-  return { socket };
+  const reconnect = () => {
+    setReconnectAttempt(reconnectAttempt + 1);
+  };
+
+  return { socket, reconnect };
 };

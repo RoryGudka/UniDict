@@ -17,16 +17,14 @@ interface Props {
   requests: Request[];
   parts: Part[];
   entries: Entry[];
-  details: string;
-
+  translation: string;
   setNativeLang: SetState<string>;
   setLearningLang: SetState<string>;
   setTab: SetState<string>;
   setRequests: SetState<Request[]>;
   setParts: SetState<Part[]>;
   setEntries: SetState<Entry[]>;
-  setDetails: SetState<string>;
-
+  setTranslation: SetState<string>;
   socket: WebSocket | null;
   isLoading: boolean;
 }
@@ -34,37 +32,52 @@ interface Props {
 const DictionaryPage: React.FC<Props> = ({
   nativeLang,
   learningLang,
+  tab,
   parts,
   entries,
-  details,
+  translation,
   setRequests,
   setParts,
   setEntries,
-  setDetails,
+  setTranslation,
   socket,
   isLoading,
 }) => {
   const responseWindowRef = useRef<HTMLDivElement>(null);
 
-  const handleSearch = (search: string) => {
+  const handleSend = (search: string) => {
     if (isLoading) return;
     if (!socket) return;
     if (!search.trim()) return;
     const id = createId();
-    const request = { id, type: "search" };
-    setRequests((prev) => [...prev, request]);
     setParts([]);
     setEntries([]);
-    setDetails("");
-    socket.send(
-      JSON.stringify({
-        api: "search",
-        requestId: id,
-        learningLang,
-        nativeLang,
-        content: search,
-      })
-    );
+    setTranslation("");
+    if (tab === "dictionary") {
+      const request = { id, type: "search" };
+      setRequests((prev) => [...prev, request]);
+      socket.send(
+        JSON.stringify({
+          api: "search",
+          requestId: id,
+          learningLang,
+          nativeLang,
+          content: search,
+        })
+      );
+    } else {
+      const request = { id, type: "translate" };
+      setRequests((prev) => [...prev, request]);
+      socket.send(
+        JSON.stringify({
+          api: "translate",
+          requestId: id,
+          learningLang,
+          nativeLang,
+          content: search,
+        })
+      );
+    }
   };
 
   const handleModifyEntry = (
@@ -133,17 +146,17 @@ const DictionaryPage: React.FC<Props> = ({
   return (
     <>
       <Box width="100%" pb="16px">
-        <SearchInput onSend={(search) => handleSearch(search)} />
+        <SearchInput onSend={handleSend} />
       </Box>
 
       <div ref={responseWindowRef} style={{ width: "100%" }}>
-        {details ||
+        {translation ||
         parts.length > 1 ||
         entries.some(({ details }) => details) ? (
           <>
-            {details && (
+            {translation && (
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {details}
+                {translation}
               </ReactMarkdown>
             )}
             {parts.length > 1 && (

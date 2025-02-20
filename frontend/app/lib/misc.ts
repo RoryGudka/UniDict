@@ -1,4 +1,10 @@
-import { DependencyList, EffectCallback, useEffect, useRef } from "react";
+import {
+  DependencyList,
+  EffectCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { nanoid } from "nanoid";
 
@@ -29,4 +35,15 @@ export function useEffectAfterInitial(
       return effect();
     }
   }, deps);
+}
+
+export function useHasTimeElapsed(time: number) {
+  const [isElapsed, setIsElapsed] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsElapsed(true), time);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  return isElapsed;
 }

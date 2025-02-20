@@ -1,24 +1,32 @@
 "use client";
 
 import { Entry, Part, Request } from "@/lib/model";
-import React, { useCallback, useState } from "react";
-import { current, produce } from "immer";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { Box } from "@mui/material";
 import DictionaryPage from "@/components/dictionary/DictionaryPage";
 import LanguageSelect from "@/components/LanguageSelect";
 import Navigation from "@/components/Navigation";
+import WebsocketAlert from "./components/WebsocketAlert";
+import { produce } from "immer";
 import { useWebsocket } from "@/lib/websocket";
 
 const App: React.FC = () => {
   const [learningLang, setLearningLang] = useState("Japanese");
   const [nativeLang, setNativeLang] = useState("English");
-  const [tab, setTab] = useState("home");
+  const [tab, setTab] = useState("dictionary");
   const [requests, setRequests] = useState<Request[]>([]);
   const [parts, setParts] = useState<Part[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [details, setDetails] = useState("");
+  const [translation, setTranslation] = useState("");
   const isLoading = !!requests.length;
+
+  useEffect(() => {
+    setRequests([]);
+    setParts([]);
+    setEntries([]);
+    setTranslation("");
+  }, [tab]);
 
   const getMetadataSegment = (str: string) => {
     const index = str.indexOf(":");
@@ -69,9 +77,9 @@ const App: React.FC = () => {
               }
             })
           );
-        } else if (task === "GET_DETAILS") {
-          // REQUEST_ID:TASK:ENTRY_ID:DETAIL_ID:CONTENT
-          setDetails((prev) => prev + message);
+        } else if (task === "GET_TRANSLATION") {
+          // REQUEST_ID:TASK:CONTENT
+          setTranslation((prev) => prev + content);
         } else if (task === "SET_DONE") {
           // REQUEST_ID:TASK:TARGET:TARGET_ID
           const [target, targetId] = getMetadataSegment(content);
@@ -141,11 +149,8 @@ const App: React.FC = () => {
               const detail = entry.details?.find(
                 (detail) => detail.id === detailId
               );
-              console.log(detailId, current(detail));
               if (!detail?.messages) return;
               const message = detail.messages[detail.messages.length - 1];
-              console.log(current(detail).messages);
-              console.log(current(message));
               if (message.source !== "deepseek") {
                 detail.messages.push({ source: "deepseek", content: segment });
               } else {
@@ -164,16 +169,14 @@ const App: React.FC = () => {
         }
       }
     },
-    [requests, setRequests, setParts, setDetails, setEntries]
+    [requests, setRequests, setParts, setTranslation, setEntries]
   );
 
   const onError = useCallback(() => {
     setRequests([]);
   }, [setRequests]);
 
-  const { socket } = useWebsocket({ onMessage, onError });
-
-  console.log(entries);
+  const { socket, reconnect } = useWebsocket({ onMessage, onError });
 
   const context = {
     nativeLang,
@@ -182,14 +185,14 @@ const App: React.FC = () => {
     requests,
     parts,
     entries,
-    details,
+    translation,
     setNativeLang,
     setLearningLang,
     setTab,
     setRequests,
     setParts,
     setEntries,
-    setDetails,
+    setTranslation,
     socket,
     isLoading,
   };
@@ -213,6 +216,7 @@ const App: React.FC = () => {
       <LanguageSelect {...context} />
       <DictionaryPage {...context} />
       <Navigation tab={tab} setTab={setTab} />
+      <WebsocketAlert socket={socket} reconnect={reconnect} />
     </Box>
   );
 };

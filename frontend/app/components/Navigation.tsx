@@ -1,5 +1,5 @@
 import { BottomNavigation, BottomNavigationAction, Box } from "@mui/material";
-import { CiClock1, CiHome, CiSearch, CiSettings } from "react-icons/ci";
+import { BsBook, BsTranslate } from "react-icons/bs";
 
 import { SetState } from "@/lib/model";
 
@@ -28,27 +28,18 @@ const Navigation: React.FC<Props> = ({ tab, setTab }) => {
           onChange={(_, newValue) => setTab(newValue)}
         >
           <BottomNavigationAction
-            value="home"
-            icon={<CiHome size="28px" />}
+            value="dictionary"
+            icon={<BsBook size="28px" />}
             disableRipple
             sx={{ py: "8px" }}
+            label="Dictionary"
           />
           <BottomNavigationAction
-            value="search"
-            icon={<CiSearch size="28px" />}
+            value="translator"
+            icon={<BsTranslate size="28px" />}
             disableRipple
             sx={{ py: "8px" }}
-          />
-          <BottomNavigationAction
-            value="history"
-            icon={<CiClock1 size="28px" />}
-            disableRipple
-            sx={{ py: "8px" }}
-          />
-          <BottomNavigationAction
-            value="account"
-            icon={<CiSettings size="28px" />}
-            disableRipple
+            label="Translator"
           />
         </BottomNavigation>
       </Box>
