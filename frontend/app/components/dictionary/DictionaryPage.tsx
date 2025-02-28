@@ -60,6 +60,7 @@ const DictionaryPage: React.FC<Props> = ({
         JSON.stringify({
           api: "search",
           requestId: id,
+          provider: "openai",
           learningLang,
           nativeLang,
           content: search,
@@ -72,6 +73,7 @@ const DictionaryPage: React.FC<Props> = ({
         JSON.stringify({
           api: "translate",
           requestId: id,
+          provider: "openai",
           learningLang,
           nativeLang,
           content: search,
@@ -96,9 +98,10 @@ const DictionaryPage: React.FC<Props> = ({
       JSON.stringify({
         api: "get_modified_entry",
         requestId: id,
-        entryId,
+        provider: "openai",
         learningLang,
         nativeLang,
+        entryId,
         content: `${entry.value}\n${content}`,
         command,
       })
@@ -133,10 +136,11 @@ const DictionaryPage: React.FC<Props> = ({
       JSON.stringify({
         api: "converse",
         requestId: id,
-        entryId,
-        detailId,
+        provider: "openai",
         learningLang,
         nativeLang,
+        entryId,
+        detailId,
         content: detail.value,
         messages,
       })

@@ -36,28 +36,63 @@ const App: React.FC = () => {
 
   const onMessage = useCallback(
     (message: string) => {
-      const [requestId, update] = getMetadataSegment(message);
-      if (!requestId || !update) return;
+      const isMessageVariable = (part: string) => {
+        return part[0] === part[0].toLowerCase();
+      };
 
-      const request = requests.find((request) => request.id === requestId);
-      if (!request) return;
+      type MatcherFn = (arg: { [key: string]: string }) => void;
+      type MatcherMap = { [matcher: string]: MatcherFn };
 
-      if (request.type === "search") {
-        const [task, content] = getMetadataSegment(update);
-        if (!task || !content) return;
+      const handleMessage = async (message: string, map: MatcherMap) => {
+        const messageParts = message.split("⌺");
+        const matchers = Object.keys(map);
+        for (let i = 0; i < matchers.length; i++) {
+          const matcher = matchers[i];
+          const matcherParts = matcher.split(":");
+          if (matcherParts.length !== messageParts.length) continue;
+          const isMatch = messageParts.every((messagePart, i) => {
+            const matcherPart = matcherParts[i];
+            if (isMessageVariable(matcherPart)) return true;
+            return messagePart === matcherPart;
+          });
+          const values = matcherParts
+            .map((matcherPart, i) => [matcherPart, messageParts[i]])
+            .filter(([matcherPart]) => isMessageVariable(matcherPart));
+          const args = Object.fromEntries(values);
+          if (isMatch) return await map[matcher](args);
+        }
+      };
 
-        if (task === "GET_PARTS") {
-          // REQUEST_ID:TASK:PART_ID:CONTENT
-          const [partId, part] = getMetadataSegment(content);
-          setParts((prev) => [...prev, { id: partId, value: part }]);
-        } else if (task === "GET_ENTRIES") {
-          // REQUEST_ID:TASK:ENTRY_ID:CONTENT
-          const [entryId, entry] = getMetadataSegment(content);
-          setEntries((prev) => [...prev, { id: entryId, value: entry }]);
-        } else if (task === "GET_ENTRY_DETAILS") {
-          // REQUEST_ID:TASK:ENTRY_ID:DETAIL_ID:CONTENT
-          const [entryId, details] = getMetadataSegment(content);
-          const [detailId, segment] = getMetadataSegment(details);
+      handleMessage(message, {
+        "requestId:GET_PARTS:partId:segment": ({
+          requestId,
+          partId,
+          segment,
+        }) => {
+          const request = requests.find((request) => request.id === requestId);
+          if (!request) return;
+
+          setParts((prev) => [...prev, { id: partId, value: segment }]);
+        },
+        "requestId:GET_ENTRIES:entryId:segment": ({
+          requestId,
+          entryId,
+          segment,
+        }) => {
+          const request = requests.find((request) => request.id === requestId);
+          if (!request) return;
+
+          setEntries((prev) => [...prev, { id: entryId, value: segment }]);
+        },
+        "requestId:GET_ENTRY_DETAILS:entryId:detailId:segment": ({
+          requestId,
+          entryId,
+          detailId,
+          segment,
+        }) => {
+          const request = requests.find((request) => request.id === requestId);
+          if (!request) return;
+
           setEntries(
             produce((prev) => {
               const entry = prev.find((entry) => entry.id === entryId);
@@ -77,34 +112,22 @@ const App: React.FC = () => {
               }
             })
           );
-        } else if (task === "GET_TRANSLATION") {
-          // REQUEST_ID:TASK:CONTENT
-          setTranslation((prev) => prev + content);
-        } else if (task === "SET_DONE") {
-          // REQUEST_ID:TASK:TARGET:TARGET_ID
-          const [target, targetId] = getMetadataSegment(content);
-          if (target === "REQUEST") {
-            setRequests((prev) =>
-              prev.filter((request) => request.id !== requestId)
-            );
-          } else if (target === "ENTRY") {
-            setEntries(
-              produce((prev) => {
-                const entry = prev.find((entry) => entry.id === targetId);
-                if (!entry) return prev;
-                entry.isDone = true;
-              })
-            );
-          }
-        }
-      }
+        },
+        "requestId:GET_TRANSLATION:segment": ({ requestId, segment }) => {
+          const request = requests.find((request) => request.id === requestId);
+          if (!request) return;
 
-      if (request.type == "get_modified_entry") {
-        const [task, content] = getMetadataSegment(update);
-        if (task === "GET_MODIFIED_ENTRY") {
-          // REQUEST_ID:ENTRY_ID:DETAIL_ID:CONTENT
-          const [entryId, details] = getMetadataSegment(content);
-          const [detailId, segment] = getMetadataSegment(details);
+          setTranslation((prev) => prev + segment);
+        },
+        "requestId:GET_MODIFIED_ENTRY:entryId:detailId:segment": ({
+          requestId,
+          entryId,
+          detailId,
+          segment,
+        }) => {
+          const request = requests.find((request) => request.id === requestId);
+          if (!request) return;
+
           setEntries(
             produce((prev) => {
               const entry = prev.find((entry) => entry.id === entryId);
@@ -124,23 +147,16 @@ const App: React.FC = () => {
               }
             })
           );
-        } else if (task === "SET_DONE") {
-          // REQUEST_ID:TASK:TARGET:TARGET_ID
-          const [target] = getMetadataSegment(content);
-          if (target === "REQUEST") {
-            setRequests((prev) =>
-              prev.filter((request) => request.id !== requestId)
-            );
-          }
-        }
-      }
+        },
+        "requestId:GET_CONVERSATION:entryId:detailId:segment": ({
+          requestId,
+          entryId,
+          detailId,
+          segment,
+        }) => {
+          const request = requests.find((request) => request.id === requestId);
+          if (!request) return;
 
-      if (request.type === "converse") {
-        const [task, content] = getMetadataSegment(update);
-        if (task === "GET_CONVERSATION") {
-          // REQUEST_ID:ENTRY_ID:DETAIL_ID:CONTENT
-          const [entryId, details] = getMetadataSegment(content);
-          const [detailId, segment] = getMetadataSegment(details);
           setEntries(
             produce((prev) => {
               const entry = prev.find((entry) => entry.id === entryId);
@@ -158,18 +174,36 @@ const App: React.FC = () => {
               }
             })
           );
-        } else if (task === "SET_DONE") {
-          // REQUEST_ID:TASK:TARGET:TARGET_ID
-          const [target] = getMetadataSegment(content);
-          if (target === "REQUEST") {
-            setRequests((prev) =>
-              prev.filter((request) => request.id !== requestId)
-            );
-          }
-        }
-      }
+        },
+        "requestId:SET_DONE:REQUEST": ({ requestId }) => {
+          const request = requests.find((request) => request.id === requestId);
+          if (!request) return;
+
+          setRequests((prev) =>
+            prev.filter((request) => request.id !== requestId)
+          );
+        },
+        "requestId:SET_DONE:ENTRY:entryId": ({ requestId, entryId }) => {
+          const request = requests.find((request) => request.id === requestId);
+          if (!request) return;
+
+          setEntries(
+            produce((prev) => {
+              const entry = prev.find((entry) => entry.id === entryId);
+              if (!entry) return prev;
+              entry.isDone = true;
+            })
+          );
+        },
+      });
+
+      const [requestId, update] = getMetadataSegment(message);
+      if (!requestId || !update) return;
+
+      const request = requests.find((request) => request.id === requestId);
+      if (!request) return;
     },
-    [requests, setRequests, setParts, setTranslation, setEntries]
+    [requests]
   );
 
   const onError = useCallback(() => {

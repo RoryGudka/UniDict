@@ -1,10 +1,27 @@
+import { ChatCompletionCreateParams } from "openai/resources";
 import OpenAI from "openai";
+import { Provider } from "./model";
+import { WebSocket } from "ws";
 import { nanoid } from "nanoid";
 
-const openai = new OpenAI({
-  baseURL: "https://api.deepseek.com", // DeepSeek API endpoint
-  apiKey: process.env.DEEPSEEK_API_KEY, // Set your DeepSeek API key in .env
+const deepseek = new OpenAI({
+  baseURL: "https://api.deepseek.com",
+  apiKey: process.env.DEEPSEEK_API_KEY,
 });
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const getClient = (provider: Provider) => {
+  if (provider === "openai") return openai;
+  else return deepseek;
+};
+
+const getModel = (provider: Provider) => {
+  if (provider === "openai") return "gpt-4o-mini-2024-07-18";
+  else return "deepseek-chat";
+};
 
 export const createId = () => {
   return nanoid().slice(0, 5);
@@ -14,11 +31,196 @@ const makeExamples = (examples: string[]) => {
   return `Examples:\n${examples.join("\n")}`;
 };
 
-export const getParts = async (
-  requestId: string,
-  content: string,
-  onChunk: (chunk: string) => void
-) => {
+interface MakeChatCompletionsRequestParams
+  extends Omit<ChatCompletionCreateParams, "model" | "stream"> {
+  provider: Provider;
+}
+
+export const makeChatCompletionsRequest = async ({
+  provider,
+  ...params
+}: MakeChatCompletionsRequestParams) => {
+  const client = getClient(provider);
+  const model = getModel(provider);
+  return await client.chat.completions.create({
+    ...params,
+    model,
+    stream: true,
+  });
+};
+
+interface SendWebsocketMessageParams {
+  ws: WebSocket;
+  parts: string[];
+}
+
+const sendWebsocketMessage = ({ ws, parts }: SendWebsocketMessageParams) => {
+  ws.send(parts.join("⌺"));
+};
+
+interface SendGetPartsMessageParams {
+  ws: WebSocket;
+  requestId: string;
+  partId: string;
+  segment: string;
+}
+
+export const sendGetPartsMessage = ({
+  ws,
+  requestId,
+  partId,
+  segment,
+}: SendGetPartsMessageParams) => {
+  sendWebsocketMessage({
+    ws,
+    parts: [requestId, "GET_PARTS", partId, segment],
+  });
+};
+
+interface SendGetEntriesMessageParams {
+  ws: WebSocket;
+  requestId: string;
+  entryId: string;
+  segment: string;
+}
+
+export const sendGetEntriesMessage = ({
+  ws,
+  requestId,
+  entryId,
+  segment,
+}: SendGetEntriesMessageParams) => {
+  sendWebsocketMessage({
+    ws,
+    parts: [requestId, "GET_ENTRIES", entryId, segment],
+  });
+};
+
+interface SendGetEntryDetailMessageParams {
+  ws: WebSocket;
+  requestId: string;
+  entryId: string;
+  detailId: string;
+  segment: string;
+}
+
+export const sendGetEntryDetailMessage = ({
+  ws,
+  requestId,
+  entryId,
+  detailId,
+  segment,
+}: SendGetEntryDetailMessageParams) => {
+  sendWebsocketMessage({
+    ws,
+    parts: [requestId, "GET_ENTRY_DETAILS", entryId, detailId, segment],
+  });
+};
+
+interface SendEntryDoneMessageParams {
+  ws: WebSocket;
+  requestId: string;
+  entryId: string;
+}
+
+export const sendEntryDoneMessage = ({
+  ws,
+  requestId,
+  entryId,
+}: SendEntryDoneMessageParams) => {
+  sendWebsocketMessage({
+    ws,
+    parts: [requestId, "SET_DONE", "ENTRY", entryId],
+  });
+};
+
+interface SendGetModifiedEntryMessageParams {
+  ws: WebSocket;
+  requestId: string;
+  entryId: string;
+  detailId: string;
+  segment: string;
+}
+
+export const sendGetModifiedEntryMessage = ({
+  ws,
+  requestId,
+  entryId,
+  detailId,
+  segment,
+}: SendGetModifiedEntryMessageParams) => {
+  sendWebsocketMessage({
+    ws,
+    parts: [requestId, "GET_MODIFIED_ENTRY", entryId, detailId, segment],
+  });
+};
+
+interface SendGetConversationMessageParams {
+  ws: WebSocket;
+  requestId: string;
+  entryId: string;
+  detailId: string;
+  segment: string;
+}
+
+export const sendGetConversationMessage = ({
+  ws,
+  requestId,
+  entryId,
+  detailId,
+  segment,
+}: SendGetModifiedEntryMessageParams) => {
+  sendWebsocketMessage({
+    ws,
+    parts: [requestId, "GET_CONVERSATION", entryId, detailId, segment],
+  });
+};
+
+interface SendGetTranslationMessageParams {
+  ws: WebSocket;
+  requestId: string;
+  segment: string;
+}
+
+export const sendGetTranslationMessage = ({
+  ws,
+  requestId,
+  segment,
+}: SendGetTranslationMessageParams) => {
+  sendWebsocketMessage({
+    ws,
+    parts: [requestId, "GET_TRANSLATION", segment],
+  });
+};
+
+interface SendRequestDoneMessageParams {
+  ws: WebSocket;
+  requestId: string;
+}
+
+export const sendRequestDoneMessage = ({
+  ws,
+  requestId,
+}: SendRequestDoneMessageParams) => {
+  sendWebsocketMessage({
+    ws,
+    parts: [requestId, "SET_DONE", "REQUEST"],
+  });
+};
+
+interface GetPartsParams {
+  ws: WebSocket;
+  requestId: string;
+  provider: Provider;
+  content: string;
+}
+
+export const getParts = async ({
+  ws,
+  requestId,
+  provider,
+  content,
+}: GetPartsParams) => {
   let message = "";
   let temp = "";
   let parts: { id: string; value: string }[] = [];
@@ -26,7 +228,7 @@ export const getParts = async (
   const addPart = (value: string) => {
     const id = createId();
     parts.push({ id, value });
-    onChunk(`${requestId}:GET_PARTS:${id}:${value}`);
+    sendGetPartsMessage({ ws, requestId, partId: id, segment: value });
   };
 
   const examples = makeExamples([
@@ -38,8 +240,8 @@ export const getParts = async (
     "`User: `君の名は` `Response: 君の名は`",
   ]);
 
-  const stream = await openai.chat.completions.create({
-    model: "deepseek-chat",
+  const stream = await makeChatCompletionsRequest({
+    provider,
     messages: [
       {
         role: "system",
@@ -47,7 +249,6 @@ export const getParts = async (
       },
       { role: "user", content },
     ],
-    stream: true,
   });
 
   for await (const chunk of stream) {
@@ -64,12 +265,21 @@ export const getParts = async (
   return message.split("|");
 };
 
-export const getEntries = async (
-  requestId: string,
-  content: string,
-  learningLang: string,
-  onChunk: (chunk: string) => void
-) => {
+interface GetEntriesParams {
+  ws: WebSocket;
+  requestId: string;
+  provider: Provider;
+  learningLang: string;
+  content: string;
+}
+
+export const getEntries = async ({
+  ws,
+  requestId,
+  provider,
+  learningLang,
+  content,
+}: GetEntriesParams) => {
   let message = "";
   let temp = "";
   let entries: { id: string; value: string }[] = [];
@@ -77,7 +287,7 @@ export const getEntries = async (
   const addEntry = (value: string) => {
     const id = createId();
     entries.push({ id, value });
-    onChunk(`${requestId}:GET_ENTRIES:${id}:${value}`);
+    sendGetEntriesMessage({ ws, requestId, entryId: id, segment: value });
   };
 
   const examples = makeExamples([
@@ -86,8 +296,8 @@ export const getEntries = async (
     "`Target language: Korean` `User: Sound` `Response: 소리|하다|든든하다|울리다|온전하다|음향|건실하다|건전하다`",
   ]);
 
-  const stream = await openai.chat.completions.create({
-    model: "deepseek-chat",
+  const stream = await makeChatCompletionsRequest({
+    provider,
     messages: [
       {
         role: "system",
@@ -95,7 +305,6 @@ export const getEntries = async (
       },
       { role: "user", content },
     ],
-    stream: true,
   });
 
   for await (const chunk of stream) {
@@ -112,17 +321,35 @@ export const getEntries = async (
   return entries;
 };
 
-export const getEntryDetail = async (
-  requestId: string,
-  entry: string,
-  entryId: string,
-  detailId: string,
-  learningLang: string,
-  nativeLang: string,
-  onChunk: (chunk: string) => void
-) => {
+interface GetEntryDetailParams {
+  ws: WebSocket;
+  requestId: string;
+  provider: Provider;
+  learningLang: string;
+  nativeLang: string;
+  entryId: string;
+  entry: string;
+  detailId: string;
+}
+
+export const getEntryDetail = async ({
+  ws,
+  requestId,
+  provider,
+  learningLang,
+  nativeLang,
+  entryId,
+  entry,
+  detailId,
+}: GetEntryDetailParams) => {
   const addEntryDetail = (value: string) => {
-    onChunk(`${requestId}:GET_ENTRY_DETAILS:${entryId}:${detailId}:${value}`);
+    sendGetEntryDetailMessage({
+      ws,
+      requestId,
+      entryId,
+      detailId,
+      segment: value,
+    });
   };
 
   const examples = makeExamples([
@@ -130,8 +357,8 @@ export const getEntryDetail = async (
     "`User learning language: Chinese` `User native language: Korean` `User: 谢天谢地` `Response: **xiè tiān xiè dì**\n*감탄사*\n1. 다행스럽게 생각하거나 안도할 때 쓰는 말\n감탄사\n2. 무슨 일이 잘 되어 감사하거나 안심할 때 사용하는 표현.`",
   ]);
 
-  const stream = await openai.chat.completions.create({
-    model: "deepseek-chat",
+  const stream = await makeChatCompletionsRequest({
+    provider,
     messages: [
       {
         role: "system",
@@ -139,7 +366,6 @@ export const getEntryDetail = async (
       },
       { role: "user", content: entry },
     ],
-    stream: true,
   });
 
   for await (const chunk of stream) {
@@ -147,46 +373,67 @@ export const getEntryDetail = async (
     if (content) addEntryDetail(content);
   }
 
-  onChunk(`${requestId}:SET_DONE:ENTRY:${entryId}`);
+  sendEntryDoneMessage({ ws, requestId, entryId });
 };
 
-export const getEntryDetails = async (
-  requestId: string,
-  entries: { id: string; value: string }[],
-  learningLang: string,
-  nativeLang: string,
-  onChunk: (chunk: string) => void
-) => {
+interface GetEntryDetailsParams {
+  ws: WebSocket;
+  requestId: string;
+  provider: Provider;
+  learningLang: string;
+  nativeLang: string;
+  entries: { id: string; value: string }[];
+}
+
+export const getEntryDetails = async ({
+  entries,
+  ...params
+}: GetEntryDetailsParams) => {
   for (const { id, value } of entries) {
-    await getEntryDetail(
-      requestId,
-      value,
-      id,
-      createId(),
-      learningLang,
-      nativeLang,
-      onChunk
-    );
+    await getEntryDetail({
+      ...params,
+      entryId: id,
+      entry: value,
+      detailId: createId(),
+    });
   }
 };
 
-export const getModifiedEntry = async (
-  requestId: string,
-  entryId: string,
-  content: string,
-  learningLang: string,
-  nativeLang: string,
-  command: string,
-  onChunk: (chunk: string) => void
-) => {
+interface GetModifiedEntryParams {
+  ws: WebSocket;
+  requestId: string;
+  provider: Provider;
+  learningLang: string;
+  nativeLang: string;
+  entryId: string;
+  content: string;
+  command: string;
+}
+
+export const getModifiedEntry = async ({
+  ws,
+  requestId,
+  provider,
+  learningLang,
+  nativeLang,
+  entryId,
+  content,
+  command,
+}: GetModifiedEntryParams) => {
   const detailId = createId();
 
   const addEntrySegment = (value: string) => {
-    onChunk(`${requestId}:GET_MODIFIED_ENTRY:${entryId}:${detailId}:${value}`);
+    sendGetModifiedEntryMessage({
+      ws,
+      requestId,
+      entryId,
+      detailId,
+      segment: value,
+    });
   };
 
-  const stream = await openai.chat.completions.create({
-    model: "deepseek-chat",
+  const stream = await makeChatCompletionsRequest({
+    provider,
     messages: [
       {
         role: "system",
@@ -194,7 +441,6 @@ export const getModifiedEntry = async (
       },
       { role: "user", content },
     ],
-    stream: true,
   });
 
   for await (const chunk of stream) {
@@ -203,22 +449,41 @@ export const getModifiedEntry = async (
   }
 };
 
-export const getConversation = async (
-  requestId: string,
-  entryId: string,
-  detailId: string,
-  content: string,
-  messages: { source: "user" | "deepseek"; content: string }[],
-  learningLang: string,
-  nativeLang: string,
-  onChunk: (chunk: string) => void
-) => {
+interface GetConversationParams {
+  ws: WebSocket;
+  requestId: string;
+  provider: Provider;
+  learningLang: string;
+  nativeLang: string;
+  entryId: string;
+  detailId: string;
+  content: string;
+  messages: { source: "user" | "deepseek"; content: string }[];
+}
+
+export const getConversation = async ({
+  ws,
+  requestId,
+  provider,
+  learningLang,
+  nativeLang,
+  entryId,
+  detailId,
+  content,
+  messages,
+}: GetConversationParams) => {
   const addEntrySegment = (value: string) => {
-    onChunk(`${requestId}:GET_CONVERSATION:${entryId}:${detailId}:${value}`);
+    sendGetConversationMessage({
+      ws,
+      requestId,
+      entryId,
+      detailId,
+      segment: value,
+    });
   };
 
-  const stream = await openai.chat.completions.create({
-    model: "deepseek-chat",
+  const stream = await makeChatCompletionsRequest({
+    provider,
     messages: [
       {
         role: "system",
@@ -232,7 +497,6 @@ export const getConversation = async (
           } as { role: "system" | "user"; content: string })
       ),
     ],
-    stream: true,
   });
 
   for await (const chunk of stream) {
@@ -241,19 +505,29 @@ export const getConversation = async (
   }
 };
 
-export const getTranslation = async (
-  requestId: string,
-  content: string,
-  learningLang: string,
-  nativeLang: string,
-  onChunk: (chunk: string) => void
-) => {
+interface GetTranslationParams {
+  ws: WebSocket;
+  requestId: string;
+  provider: Provider;
+  learningLang: string;
+  nativeLang: string;
+  content: string;
+}
+
+export const getTranslation = async ({
+  ws,
+  requestId,
+  provider,
+  learningLang,
+  nativeLang,
+  content,
+}: GetTranslationParams) => {
   const addDetailSegment = (value: string) => {
-    onChunk(`${requestId}:GET_TRANSLATION:${value}`);
+    sendGetTranslationMessage({ ws, requestId, segment: value });
   };
 
-  const stream = await openai.chat.completions.create({
-    model: "deepseek-chat",
+  const stream = await makeChatCompletionsRequest({
+    provider,
     messages: [
       {
         role: "system",
@@ -261,7 +535,6 @@ export const getTranslation = async (
       },
       { role: "user", content },
     ],
-    stream: true,
   });
 
   for await (const chunk of stream) {

@@ -1,5 +1,12 @@
 import "dotenv/config";
 
+import {
+  ApiRequest,
+  ConverseRequest,
+  GetModifiedEntryRequest,
+  SearchRequest,
+  TranslateRequest,
+} from "./model.js";
 import { WebSocket, WebSocketServer } from "ws";
 import {
   getConversation,
@@ -8,69 +15,20 @@ import {
   getModifiedEntry,
   getParts,
   getTranslation,
+  sendRequestDoneMessage,
 } from "./common.js";
 
 import express from "express";
 import http from "http";
 
-interface SearchRequest {
-  api: "search";
-  requestId: string;
-  learningLang: string;
-  nativeLang: string;
-  content: string;
-}
-
-interface TranslateRequest {
-  api: "translate";
-  requestId: string;
-  learningLang: string;
-  nativeLang: string;
-  content: string;
-}
-
-interface GetModifiedEntryRequest {
-  api: "get_modified_entry";
-  requestId: string;
-  entryId: string;
-  learningLang: string;
-  nativeLang: string;
-  content: string;
-  command: string;
-}
-
-interface ConverseRequest {
-  api: "converse";
-  requestId: string;
-  entryId: string;
-  detailId: string;
-  learningLang: string;
-  nativeLang: string;
-  content: string;
-  messages: { source: "user" | "deepseek"; content: string }[];
-}
-
-type ApiRequest =
-  | SearchRequest
-  | TranslateRequest
-  | GetModifiedEntryRequest
-  | ConverseRequest;
-
 const search = async (ws: WebSocket, payload: SearchRequest) => {
-  const { requestId, learningLang, nativeLang, content } = payload;
+  const { requestId } = payload;
   try {
-    await getParts(requestId, content, (c) => ws.send(c));
-    const entries = await getEntries(requestId, content, learningLang, (c) =>
-      ws.send(c)
-    );
-    await getEntryDetails(
-      requestId,
-      entries.slice(0, 3),
-      learningLang,
-      nativeLang,
-      (c) => ws.send(c)
-    );
-    ws.send(`${requestId}:SET_DONE:REQUEST:${requestId}`);
+    await getParts({ ...payload, ws });
+    let entries = await getEntries({ ...payload, ws });
+    entries = entries.slice(0, 3);
+    await getEntryDetails({ ...payload, entries, ws });
+    sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
     console.error("Error calling DeepSeek API:", error);
     ws.send("Error: Failed to process request");
@@ -78,12 +36,10 @@ const search = async (ws: WebSocket, payload: SearchRequest) => {
 };
 
 const translate = async (ws: WebSocket, payload: TranslateRequest) => {
-  const { requestId, learningLang, nativeLang, content } = payload;
+  const { requestId } = payload;
   try {
-    await getTranslation(requestId, content, learningLang, nativeLang, (c) =>
-      ws.send(c)
-    );
-    ws.send(`${requestId}:SET_DONE:REQUEST:${requestId}`);
+    await getTranslation({ ...payload, ws });
+    sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
     console.error("Error calling DeepSeek API:", error);
     ws.send("Error: Failed to process request");
@@ -91,19 +47,10 @@ const translate = async (ws: WebSocket, payload: TranslateRequest) => {
 };
 
 const modifyEntry = async (ws: WebSocket, payload: GetModifiedEntryRequest) => {
-  const { requestId, entryId, learningLang, nativeLang, content, command } =
-    payload;
+  const { requestId } = payload;
   try {
-    await getModifiedEntry(
-      requestId,
-      entryId,
-      content,
-      learningLang,
-      nativeLang,
-      command,
-      (c) => ws.send(c)
-    );
-    ws.send(`${requestId}:SET_DONE:REQUEST:${requestId}`);
+    await getModifiedEntry({ ...payload, ws });
+    sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
     console.error("Error calling DeepSeek API:", error);
     ws.send("Error: Failed to process request");
@@ -111,48 +58,27 @@ const modifyEntry = async (ws: WebSocket, payload: GetModifiedEntryRequest) => {
 };
 
 const converse = async (ws: WebSocket, payload: ConverseRequest) => {
-  const {
-    requestId,
-    entryId,
-    detailId,
-    learningLang,
-    nativeLang,
-    content,
-    messages,
-  } = payload;
+  const { requestId } = payload;
   try {
-    await getConversation(
-      requestId,
-      entryId,
-      detailId,
-      content,
-      messages,
-      learningLang,
-      nativeLang,
-      (c) => ws.send(c)
-    );
-    ws.send(`${requestId}:SET_DONE:REQUEST:${requestId}`);
+    await getConversation({ ...payload, ws });
+    sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
     console.error("Error calling DeepSeek API:", error);
     ws.send("Error: Failed to process request");
   }
 };
 
-// Express app setup
 const app = express();
 const server = http.createServer(app);
 
-// WebSocket server setup
 const wss = new WebSocketServer({ noServer: true });
 
-// Handle HTTP upgrade requests
 server.on("upgrade", (request, socket, head) => {
   wss.handleUpgrade(request, socket, head, (ws) => {
     wss.emit("connection", ws, request);
   });
 });
 
-// WebSocket connection handler
 wss.on("connection", (ws) => {
   console.log("New WebSocket client connected");
 
@@ -189,7 +115,6 @@ wss.on("connection", (ws) => {
   });
 });
 
-// Start the server
 const PORT = process.env.PORT || 80;
 server.listen(PORT, () => {
   console.log(`Server is running on http://127.0.0.1:${PORT}`);
