@@ -26,4 +26,10 @@ export interface Entry {
   isDone?: boolean;
 }
 
+export interface Translation {
+  id: string;
+  value: string;
+  messages: Message[];
+}
+
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>;

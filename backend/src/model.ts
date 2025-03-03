@@ -18,8 +18,8 @@ export interface TranslateRequest {
   provider: Provider;
 }
 
-export interface GetModifiedEntryRequest {
-  api: "get_modified_entry";
+export interface GetEntryModificationRequest {
+  api: "get_entry_modification";
   requestId: string;
   entryId: string;
   learningLang: string;
@@ -29,8 +29,8 @@ export interface GetModifiedEntryRequest {
   provider: Provider;
 }
 
-export interface ConverseRequest {
-  api: "converse";
+export interface EntryConverseRequest {
+  api: "entry_converse";
   requestId: string;
   entryId: string;
   detailId: string;
@@ -41,8 +41,20 @@ export interface ConverseRequest {
   provider: Provider;
 }
 
+export interface TranslationConverseRequest {
+  api: "translation_converse";
+  requestId: string;
+  translationId: string;
+  learningLang: string;
+  nativeLang: string;
+  content: string;
+  messages: { source: "user" | "deepseek"; content: string }[];
+  provider: Provider;
+}
+
 export type ApiRequest =
   | SearchRequest
   | TranslateRequest
-  | GetModifiedEntryRequest
-  | ConverseRequest;
+  | GetEntryModificationRequest
+  | EntryConverseRequest
+  | TranslationConverseRequest;

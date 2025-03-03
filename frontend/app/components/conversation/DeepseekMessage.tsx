@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import Image from "next/image";
-import Markdown from "@/components/Markdown";
+import Markdown from "@/components/common/Markdown";
 import deepseek from "@/public/deepseek.ico";
 
 interface Props {

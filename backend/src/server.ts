@@ -2,19 +2,21 @@ import "dotenv/config";
 
 import {
   ApiRequest,
-  ConverseRequest,
-  GetModifiedEntryRequest,
+  EntryConverseRequest,
+  GetEntryModificationRequest,
   SearchRequest,
   TranslateRequest,
+  TranslationConverseRequest,
 } from "./model.js";
 import { WebSocket, WebSocketServer } from "ws";
 import {
-  getConversation,
   getEntries,
+  getEntryConversation,
   getEntryDetails,
-  getModifiedEntry,
+  getEntryModification,
   getParts,
   getTranslation,
+  getTranslationConversation,
   sendRequestDoneMessage,
 } from "./common.js";
 
@@ -46,10 +48,13 @@ const translate = async (ws: WebSocket, payload: TranslateRequest) => {
   }
 };
 
-const modifyEntry = async (ws: WebSocket, payload: GetModifiedEntryRequest) => {
+const modifyEntry = async (
+  ws: WebSocket,
+  payload: GetEntryModificationRequest
+) => {
   const { requestId } = payload;
   try {
-    await getModifiedEntry({ ...payload, ws });
+    await getEntryModification({ ...payload, ws });
     sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
     console.error("Error calling DeepSeek API:", error);
@@ -57,10 +62,24 @@ const modifyEntry = async (ws: WebSocket, payload: GetModifiedEntryRequest) => {
   }
 };
 
-const converse = async (ws: WebSocket, payload: ConverseRequest) => {
+const entryConverse = async (ws: WebSocket, payload: EntryConverseRequest) => {
   const { requestId } = payload;
   try {
-    await getConversation({ ...payload, ws });
+    await getEntryConversation({ ...payload, ws });
+    sendRequestDoneMessage({ ws, requestId });
+  } catch (error) {
+    console.error("Error calling DeepSeek API:", error);
+    ws.send("Error: Failed to process request");
+  }
+};
+
+const translationConverse = async (
+  ws: WebSocket,
+  payload: TranslationConverseRequest
+) => {
+  const { requestId } = payload;
+  try {
+    await getTranslationConversation({ ...payload, ws });
     sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
     console.error("Error calling DeepSeek API:", error);
@@ -92,10 +111,12 @@ wss.on("connection", (ws) => {
         await search(ws, payload);
       } else if (api === "translate") {
         await translate(ws, payload);
-      } else if (api === "get_modified_entry") {
+      } else if (api === "get_entry_modification") {
         await modifyEntry(ws, payload);
-      } else if (api === "converse") {
-        await converse(ws, payload);
+      } else if (api === "entry_converse") {
+        await entryConverse(ws, payload);
+      } else if (api === "translation_converse") {
+        await translationConverse(ws, payload);
       } else {
         ws.send("Error: Invalid API request");
         console.error(`Invalid api: ${api}`);

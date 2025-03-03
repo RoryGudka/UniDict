@@ -4,27 +4,22 @@ import React, { useRef } from "react";
 import { Box } from "@mui/material";
 import DictionaryEntry from "@/components/dictionary/DictionaryEntry";
 import LoadingSkeleton from "@/components/dictionary/LoadingSkeleton";
-import ReactMarkdown from "react-markdown";
 import SearchInput from "@/components/dictionary/SearchInput";
 import { createId } from "@/lib/misc";
 import { produce } from "immer";
-import remarkGfm from "remark-gfm";
 
 interface Props {
   nativeLang: string;
   learningLang: string;
-  tab: string;
   requests: Request[];
   parts: Part[];
   entries: Entry[];
-  translation: string;
   setNativeLang: SetState<string>;
   setLearningLang: SetState<string>;
   setTab: SetState<string>;
   setRequests: SetState<Request[]>;
   setParts: SetState<Part[]>;
   setEntries: SetState<Entry[]>;
-  setTranslation: SetState<string>;
   socket: WebSocket | null;
   isLoading: boolean;
 }
@@ -32,14 +27,11 @@ interface Props {
 const DictionaryPage: React.FC<Props> = ({
   nativeLang,
   learningLang,
-  tab,
   parts,
   entries,
-  translation,
   setRequests,
   setParts,
   setEntries,
-  setTranslation,
   socket,
   isLoading,
 }) => {
@@ -52,34 +44,19 @@ const DictionaryPage: React.FC<Props> = ({
     const id = createId();
     setParts([]);
     setEntries([]);
-    setTranslation("");
-    if (tab === "dictionary") {
-      const request = { id, type: "search" };
-      setRequests((prev) => [...prev, request]);
-      socket.send(
-        JSON.stringify({
-          api: "search",
-          requestId: id,
-          provider: "openai",
-          learningLang,
-          nativeLang,
-          content: search,
-        })
-      );
-    } else {
-      const request = { id, type: "translate" };
-      setRequests((prev) => [...prev, request]);
-      socket.send(
-        JSON.stringify({
-          api: "translate",
-          requestId: id,
-          provider: "openai",
-          learningLang,
-          nativeLang,
-          content: search,
-        })
-      );
-    }
+
+    const request = { id, type: "search" };
+    setRequests((prev) => [...prev, request]);
+    socket.send(
+      JSON.stringify({
+        api: "search",
+        requestId: id,
+        provider: "openai",
+        learningLang,
+        nativeLang,
+        content: search,
+      })
+    );
   };
 
   const handleModifyEntry = (
@@ -92,11 +69,11 @@ const DictionaryPage: React.FC<Props> = ({
     const entry = entries.find((entry) => entry.id === entryId);
     if (!entry) return;
     const id = createId();
-    const request = { id, type: "get_modified_entry" };
+    const request = { id, type: "get_entry_modification" };
     setRequests((prev) => [...prev, request]);
     socket.send(
       JSON.stringify({
-        api: "get_modified_entry",
+        api: "get_entry_modification",
         requestId: id,
         provider: "openai",
         learningLang,
@@ -120,7 +97,7 @@ const DictionaryPage: React.FC<Props> = ({
     const detail = entry.details?.find((detail) => detail.id === detailId);
     if (!detail) return;
     const id = createId();
-    const request = { id, type: "converse" };
+    const request = { id, type: "entry_converse" };
     setEntries(
       produce((prev) => {
         const entry = prev.find((entry) => entry.id === entryId);
@@ -134,7 +111,7 @@ const DictionaryPage: React.FC<Props> = ({
     setRequests((prev) => [...prev, request]);
     socket.send(
       JSON.stringify({
-        api: "converse",
+        api: "entry_converse",
         requestId: id,
         provider: "openai",
         learningLang,
@@ -154,15 +131,8 @@ const DictionaryPage: React.FC<Props> = ({
       </Box>
 
       <div ref={responseWindowRef} style={{ width: "100%" }}>
-        {translation ||
-        parts.length > 1 ||
-        entries.some(({ details }) => details) ? (
+        {parts.length > 1 || entries.some(({ details }) => details) ? (
           <>
-            {translation && (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {translation}
-              </ReactMarkdown>
-            )}
             {parts.length > 1 && (
               <Box
                 pb="16px"

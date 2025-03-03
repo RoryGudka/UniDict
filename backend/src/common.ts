@@ -134,7 +134,7 @@ export const sendEntryDoneMessage = ({
   });
 };
 
-interface SendGetModifiedEntryMessageParams {
+interface SendGetEntryModificationMessageParams {
   ws: WebSocket;
   requestId: string;
   entryId: string;
@@ -142,20 +142,20 @@ interface SendGetModifiedEntryMessageParams {
   segment: string;
 }
 
-export const sendGetModifiedEntryMessage = ({
+export const sendGetEntryModificationMessage = ({
   ws,
   requestId,
   entryId,
   detailId,
   segment,
-}: SendGetModifiedEntryMessageParams) => {
+}: SendGetEntryModificationMessageParams) => {
   sendWebsocketMessage({
     ws,
-    parts: [requestId, "GET_MODIFIED_ENTRY", entryId, detailId, segment],
+    parts: [requestId, "GET_ENTRY_MODIFICATION", entryId, detailId, segment],
   });
 };
 
-interface SendGetConversationMessageParams {
+interface SendGetEntryConversationMessageParams {
   ws: WebSocket;
   requestId: string;
   entryId: string;
@@ -163,16 +163,16 @@ interface SendGetConversationMessageParams {
   segment: string;
 }
 
-export const sendGetConversationMessage = ({
+export const sendGetEntryConversationMessage = ({
   ws,
   requestId,
   entryId,
   detailId,
   segment,
-}: SendGetModifiedEntryMessageParams) => {
+}: SendGetEntryConversationMessageParams) => {
   sendWebsocketMessage({
     ws,
-    parts: [requestId, "GET_CONVERSATION", entryId, detailId, segment],
+    parts: [requestId, "GET_ENTRY_CONVERSATION", entryId, detailId, segment],
   });
 };
 
@@ -190,6 +190,25 @@ export const sendGetTranslationMessage = ({
   sendWebsocketMessage({
     ws,
     parts: [requestId, "GET_TRANSLATION", segment],
+  });
+};
+
+interface SendGetTranslationConversationMessageParams {
+  ws: WebSocket;
+  requestId: string;
+  translationId: string;
+  segment: string;
+}
+
+export const sendGetTranslationConversationMessage = ({
+  ws,
+  requestId,
+  translationId,
+  segment,
+}: SendGetTranslationConversationMessageParams) => {
+  sendWebsocketMessage({
+    ws,
+    parts: [requestId, "GET_TRANSLATION_CONVERSATION", translationId, segment],
   });
 };
 
@@ -399,7 +418,7 @@ export const getEntryDetails = async ({
   }
 };
 
-interface GetModifiedEntryParams {
+interface GetEntryModificationParams {
   ws: WebSocket;
   requestId: string;
   provider: Provider;
@@ -410,7 +429,7 @@ interface GetModifiedEntryParams {
   command: string;
 }
 
-export const getModifiedEntry = async ({
+export const getEntryModification = async ({
   ws,
   requestId,
   provider,
@@ -419,11 +438,11 @@ export const getModifiedEntry = async ({
   entryId,
   content,
   command,
-}: GetModifiedEntryParams) => {
+}: GetEntryModificationParams) => {
   const detailId = createId();
 
   const addEntrySegment = (value: string) => {
-    sendGetModifiedEntryMessage({
+    sendGetEntryModificationMessage({
       ws,
       requestId,
       entryId,
@@ -449,7 +468,7 @@ export const getModifiedEntry = async ({
   }
 };
 
-interface GetConversationParams {
+interface GetEntryConversationParams {
   ws: WebSocket;
   requestId: string;
   provider: Provider;
@@ -461,7 +480,7 @@ interface GetConversationParams {
   messages: { source: "user" | "deepseek"; content: string }[];
 }
 
-export const getConversation = async ({
+export const getEntryConversation = async ({
   ws,
   requestId,
   provider,
@@ -471,9 +490,9 @@ export const getConversation = async ({
   detailId,
   content,
   messages,
-}: GetConversationParams) => {
+}: GetEntryConversationParams) => {
   const addEntrySegment = (value: string) => {
-    sendGetConversationMessage({
+    sendGetEntryConversationMessage({
       ws,
       requestId,
       entryId,
@@ -540,5 +559,58 @@ export const getTranslation = async ({
   for await (const chunk of stream) {
     const content = chunk.choices[0]?.delta?.content;
     if (content) addDetailSegment(content);
+  }
+};
+
+interface GetTranslationConversationParams {
+  ws: WebSocket;
+  requestId: string;
+  provider: Provider;
+  learningLang: string;
+  nativeLang: string;
+  translationId: string;
+  content: string;
+  messages: { source: "user" | "deepseek"; content: string }[];
+}
+
+export const getTranslationConversation = async ({
+  ws,
+  requestId,
+  provider,
+  learningLang,
+  nativeLang,
+  translationId,
+  content,
+  messages,
+}: GetTranslationConversationParams) => {
+  const addTranslationSegment = (value: string) => {
+    sendGetTranslationConversationMessage({
+      ws,
+      requestId,
+      translationId,
+      segment: value,
+    });
+  };
+
+  const stream = await makeChatCompletionsRequest({
+    provider,
+    messages: [
+      {
+        role: "system",
+        content: `You are an chatbot for a universal dictionary application. Your goal is to assist the user, whose native language is ${nativeLang}, in learning ${learningLang}. If their native language is not English, do not respond in English. Answer any questions the user may have on the following translation:\n\n${content}`,
+      },
+      ...messages.map(
+        ({ source, content }) =>
+          ({
+            role: source === "deepseek" ? "system" : "user",
+            content,
+          } as { role: "system" | "user"; content: string })
+      ),
+    ],
+  });
+
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content;
+    if (content) addTranslationSegment(content);
   }
 };
