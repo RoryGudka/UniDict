@@ -1,0 +1,32 @@
+"use client";
+
+import { Amplify } from "aws-amplify";
+import { useEffect } from "react";
+
+const AmplifyConfigure: React.FC = () => {
+  useEffect(() => {
+    Amplify.configure({
+      Auth: {
+        Cognito: {
+          userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID!,
+          userPoolClientId: process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID!,
+          loginWith: {
+            email: true,
+            oauth: {
+              domain: process.env.NEXT_PUBLIC_AUTH_DOMAIN!,
+              redirectSignIn: [process.env.NEXT_PUBLIC_REDIRECT_SIGN_IN!],
+              redirectSignOut: [process.env.NEXT_PUBLIC_REDIRECT_SIGN_OUT!],
+              responseType: "code",
+              providers: ["Google"],
+              scopes: ["openid", "email"],
+            },
+          },
+        },
+      },
+    });
+  }, []);
+
+  return <></>;
+};
+
+export default AmplifyConfigure;

@@ -1,6 +1,8 @@
-import "./globals.css";
+import "@/_styles/globals.css";
 
+import AmplifyConfigure from "@/_components/AmplifyConfigure";
 import type { Metadata } from "next";
+import Providers from "@/_components/Providers";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -41,7 +43,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <AmplifyConfigure />
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

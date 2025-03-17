@@ -1,5 +1,12 @@
 {
-  "cSpell.words": ["Chev", "DEEPSEEK"],
+  "cSpell.words": [
+    "Chev",
+    "Cooldown",
+    "DEEPSEEK",
+    "unfound",
+    "Unidictionary",
+    "unmarshall"
+  ],
   "workbench.colorCustomizations": {
     "statusBar.background": "#6E4A9E", // Deep purple
     "statusBar.foreground": "#FFFFFF", // White for contrast
