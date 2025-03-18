@@ -10,6 +10,7 @@ const AmplifyConfigure: React.FC = () => {
         Cognito: {
           userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID!,
           userPoolClientId: process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID!,
+          userAttributes: { name: { required: true } },
           loginWith: {
             email: true,
             oauth: {
@@ -18,7 +19,12 @@ const AmplifyConfigure: React.FC = () => {
               redirectSignOut: [process.env.NEXT_PUBLIC_REDIRECT_SIGN_OUT!],
               responseType: "code",
               providers: ["Google"],
-              scopes: ["openid", "email"],
+              scopes: [
+                "openid",
+                "email",
+                "profile",
+                "aws.cognito.signin.user.admin",
+              ],
             },
           },
         },

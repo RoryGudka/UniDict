@@ -31,7 +31,7 @@ const TranslatorPage: React.FC = () => {
   } = useDataContext();
   const { profile } = useUser();
   const { provider, learningLanguages } = profile;
-  const { translationGenerationPrompt } = learningLanguages[learningLang];
+  const { translationGenerationPrompt } = learningLanguages[learningLang] || {};
 
   const responseWindowRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);

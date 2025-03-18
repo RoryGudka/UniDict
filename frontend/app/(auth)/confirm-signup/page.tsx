@@ -21,6 +21,7 @@ export default function ConfirmSignUpPage() {
       const output = await confirmSignUp({
         username: email,
         confirmationCode: code,
+        options: { autoSignIn: true },
       });
       await handleAuthSignUpStep(output, email);
     } catch (e) {

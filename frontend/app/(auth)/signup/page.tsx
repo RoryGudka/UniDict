@@ -17,7 +17,11 @@ export default function SignUpPage() {
     e.preventDefault();
 
     try {
-      const output = await signUp({ username: email, password });
+      const output = await signUp({
+        username: email,
+        password,
+        options: { autoSignIn: true, userAttributes: { name } },
+      });
       await handleAuthSignUpStep(output, email);
     } catch (e) {
       showToast((e as Error).message || "Error signing up");

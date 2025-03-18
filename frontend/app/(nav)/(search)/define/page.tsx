@@ -28,7 +28,7 @@ const DictionaryPage: React.FC = () => {
   } = useDataContext();
   const { profile } = useUser();
   const { provider, learningLanguages } = profile;
-  const { entryGenerationPrompt } = learningLanguages[learningLang];
+  const { entryGenerationPrompt } = learningLanguages[learningLang] || {};
 
   const responseWindowRef = useRef<HTMLDivElement>(null);
 

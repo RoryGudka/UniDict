@@ -1,6 +1,13 @@
 "use client";
 
 import {
+  FetchUserAttributesOutput,
+  fetchAuthSession,
+  fetchUserAttributes,
+  getCurrentUser,
+  signOut,
+} from "aws-amplify/auth";
+import {
   Profile,
   SetState,
   User,
@@ -8,9 +15,9 @@ import {
   defaultUserProfile,
 } from "@/_lib/model";
 import { createContext, useContext, useEffect, useState } from "react";
-import { fetchAuthSession, getCurrentUser, signOut } from "aws-amplify/auth";
 
 import { get } from "@/_lib/api";
+import posthog from "posthog-js";
 import { useToast } from "@/_contexts/ToastContext";
 
 interface UserContextType {
@@ -44,10 +51,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = async () => {
     try {
       setIsLoading(true);
-      const currentUser = await getCurrentUser();
       const session = await fetchAuthSession();
       const token = session.tokens?.idToken?.toString() || null;
       if (!token) return;
+
+      const currentUser = await getCurrentUser();
+      let attributes = await fetchUserAttributes();
 
       const profile = await get<Profile>(
         `/api/profile/${currentUser.username}`,
@@ -56,6 +65,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setAuthToken(token);
       setUser({ id: currentUser.userId, email: currentUser.username });
       setProfile({ ...defaultUserProfile, ...(profile || {}) });
+
+      if (process.env.NEXT_PUBLIC_ENVIRONMENT !== "local") {
+        posthog.identify(currentUser.userId, {
+          email: currentUser.username,
+          name: attributes.name,
+        });
+      }
     } catch (e) {
       setUser(null);
       setAuthToken(null);
@@ -70,6 +86,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setAuthToken(null);
       setProfile(defaultNoUserProfile);
+
+      if (process.env.NEXT_PUBLIC_ENVIRONMENT !== "local") {
+        posthog.reset();
+      }
+
       showToast("Successfully signed out", "success");
     } catch (e) {
       showToast((e as Error).message, "error");

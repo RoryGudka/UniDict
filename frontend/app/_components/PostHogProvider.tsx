@@ -10,21 +10,23 @@ export default function PostHogProvider({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-      api_host: "https://www.uni-dictionary.com/ingest",
-      capture_pageview: false,
-      session_recording: { maskInputOptions: { password: true } },
-    });
+    if (process.env.NEXT_PUBLIC_ENVIRONMENT !== "local") {
+      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY! || "", {
+        api_host: "https://www.uni-dictionary.com/ingest",
+        capture_pageview: false,
+        session_recording: { maskInputOptions: { password: true } },
+      });
 
-    const handleRouteChange = () => {
-      posthog.capture("$pageview");
-    };
+      const handleRouteChange = () => {
+        posthog.capture("$pageview");
+      };
 
-    window.addEventListener("popstate", handleRouteChange);
+      window.addEventListener("popstate", handleRouteChange);
 
-    return () => {
-      window.removeEventListener("popstate", handleRouteChange);
-    };
+      return () => {
+        window.removeEventListener("popstate", handleRouteChange);
+      };
+    }
   }, []);
 
   return <Provider client={posthog}>{children}</Provider>;
