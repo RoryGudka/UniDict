@@ -24,7 +24,7 @@ const ProfilePage: React.FC = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <Paper sx={{ p: "24px" }}>
+          <Paper sx={{ p: "24px" }} elevation={4}>
             <Typography
               variant="h6"
               component="h2"

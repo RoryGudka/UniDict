@@ -36,9 +36,13 @@ const Header: React.FC<Props> = ({ title }) => {
         <Box display="flex" alignItems="center" gap="8px">
           {isLoading ? (
             <Skeleton width="150px" />
-          ) : (
+          ) : nativeLang && learningLang ? (
             <span style={{ color: "rgba(0, 0, 0, 0.54)" }}>
               {nativeLang} ⟷ {learningLang}
+            </span>
+          ) : (
+            <span style={{ color: "rgba(0, 0, 0, 0.54)" }}>
+              Languages not set
             </span>
           )}
 

@@ -25,7 +25,7 @@ export default function ConfirmSignUpPage() {
       });
       await handleAuthSignUpStep(output, email);
     } catch (e) {
-      showToast((e as Error).message || "Error confirming sign up");
+      showToast((e as Error).message || "Error confirming sign up", "error");
     }
   };
 

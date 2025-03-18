@@ -8,7 +8,7 @@ import EmptyState from "@/(nav)/(search)/define/_components/EmptyState";
 import Header from "@/(nav)/(search)/_components/Header";
 import LoadingSkeleton from "@/(nav)/(search)/define/_components/LoadingSkeleton";
 import { Message } from "@/_lib/model";
-import SearchInput from "@/(nav)/(search)/define/_components/SearchInput";
+import SearchInput from "@/(nav)/(search)/_components/SearchInput";
 import { createId } from "@/_lib/misc";
 import { produce } from "immer";
 import { useDataContext } from "@/_contexts/DataContext";
@@ -125,7 +125,10 @@ const DictionaryPage: React.FC = () => {
       <Header title="Dictionary" />
 
       <Box width="100%" pb="16px">
-        <SearchInput onSend={handleSend} />
+        <SearchInput
+          onSend={handleSend}
+          placeholder="Enter a word or phrase to define"
+        />
       </Box>
 
       <div ref={responseWindowRef} style={{ width: "100%" }}>

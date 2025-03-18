@@ -88,7 +88,6 @@ export const handleWebsocketMessage = async (
   ws: WebSocket,
   message: RawData
 ) => {
-  console.log(`Received: ${message}`);
   try {
     const payload = JSON.parse(message.toString()) as ApiRequest;
     const { api } = payload;

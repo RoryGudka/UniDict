@@ -34,9 +34,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     event?: React.SyntheticEvent | Event,
     reason?: string
   ) => {
-    if (reason === "clickaway") {
-      return;
-    }
+    if (reason === "clickaway") return;
+
     setOpen(false);
   };
 

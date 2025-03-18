@@ -24,7 +24,7 @@ export default function SignUpPage() {
       });
       await handleAuthSignUpStep(output, email);
     } catch (e) {
-      showToast((e as Error).message || "Error signing up");
+      showToast((e as Error).message || "Error signing up", "error");
     }
   };
 

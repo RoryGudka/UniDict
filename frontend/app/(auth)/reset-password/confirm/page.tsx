@@ -25,10 +25,13 @@ export default function ConfirmResetPasswordPage() {
         confirmationCode: code,
         newPassword,
       });
-      showToast("Password reset successfully!");
+      showToast("Password reset successfully!", "success");
       router.push("/signin");
     } catch (e) {
-      showToast((e as Error).message || "Error confirming password reset");
+      showToast(
+        (e as Error).message || "Error confirming password reset",
+        "error"
+      );
     }
   };
 

@@ -16,7 +16,10 @@ const GoogleSignOn: React.FC<Props> = ({ isSignIn }) => {
     try {
       await signInWithRedirect({ provider: "Google" });
     } catch (e) {
-      showToast((e as Error).message || "Error signing in with Google");
+      showToast(
+        (e as Error).message || "Error signing in with Google",
+        "error"
+      );
     }
   };
 

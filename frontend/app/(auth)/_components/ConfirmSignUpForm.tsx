@@ -33,9 +33,12 @@ export default function ConfirmSignUpForm({
     try {
       await resendSignUpCode({ username: email });
       setCooldown(60);
-      showToast("Verification code resent successfully!");
+      showToast("Verification code resent successfully!", "success");
     } catch (e) {
-      showToast((e as Error).message || "Error resending verification code");
+      showToast(
+        (e as Error).message || "Error resending verification code",
+        "error"
+      );
     }
   };
 

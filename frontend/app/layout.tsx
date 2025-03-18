@@ -7,7 +7,7 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
   title: `Uni-Dictionary`,
-  description: `Uni-Dictionary is an AI powered universal dictionary tool for learning foreign languages`,
+  description: `Uni-Dictionary is an AI powered universal dictionary for learning foreign languages`,
 };
 
 export default function RootLayout({

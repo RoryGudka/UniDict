@@ -30,9 +30,7 @@ const LearningLanguages: React.FC<LearningLanguagesProps> = ({
     if (newLanguage.trim()) {
       onAdd(newLanguage.trim());
       setNewLanguage("");
-      if (!Object.keys(profile.learningLanguages)) {
-        onSelect(newLanguage.trim());
-      }
+      if (!profile.learningLanguage) onSelect(newLanguage.trim());
     }
   };
 

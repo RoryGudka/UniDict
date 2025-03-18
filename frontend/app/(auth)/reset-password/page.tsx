@@ -17,7 +17,7 @@ export default function ResetPasswordPage() {
       await resetPassword({ username: email });
       router.push(`/reset-password/confirm?email=${encodeURIComponent(email)}`);
     } catch (e) {
-      showToast((e as Error).message || "Error resetting password");
+      showToast((e as Error).message || "Error resetting password", "error");
     }
   };
 

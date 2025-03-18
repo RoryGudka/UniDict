@@ -68,7 +68,7 @@ const SignUpForm = ({
           variant="contained"
           sx={{ mt: "16px", py: "12px" }}
         >
-          Sign up
+          <Typography fontWeight={600}>Sign up</Typography>
         </Button>
       </form>
       <GoogleSignOn isSignIn={false} />

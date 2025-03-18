@@ -18,7 +18,7 @@ export default function SignInPage() {
       const output = await signIn({ username: email, password });
       await handleAuthSignInStep(output, email);
     } catch (e) {
-      showToast((e as Error).message || "Error signing in");
+      showToast((e as Error).message || "Error signing in", "error");
     }
   };
 

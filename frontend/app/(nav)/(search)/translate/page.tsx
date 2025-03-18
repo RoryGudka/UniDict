@@ -10,7 +10,7 @@ import IndexSelect from "@/(nav)/(search)/_components/IndexSelect";
 import LoadingSkeleton from "@/(nav)/(search)/define/_components/LoadingSkeleton";
 import Markdown from "@/(nav)/_components/Markdown";
 import { Message } from "@/_lib/model";
-import SearchInput from "@/(nav)/(search)/define/_components/SearchInput";
+import SearchInput from "@/(nav)/(search)/_components/SearchInput";
 import TranslationModifiers from "@/(nav)/(search)/translate/_components/TranslationModifiers";
 import { createId } from "@/_lib/misc";
 import { produce } from "immer";
@@ -106,7 +106,10 @@ const TranslatorPage: React.FC = () => {
       <Header title="Translator" />
 
       <Box width="100%" pb="16px">
-        <SearchInput onSend={handleSend} />
+        <SearchInput
+          onSend={handleSend}
+          placeholder="Enter a sentence to translate"
+        />
       </Box>
 
       <div ref={responseWindowRef} style={{ width: "100%" }}>

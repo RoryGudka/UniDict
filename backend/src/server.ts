@@ -25,7 +25,7 @@ const clients = new Set<WebSocket>();
 
 // WebSocket connection handling
 wss.on("connection", (ws) => {
-  console.log("New WebSocket connection established");
+  console.info("New WebSocket connection established");
   clients.add(ws);
 
   ws.on("message", async (message) => {
@@ -38,7 +38,7 @@ wss.on("connection", (ws) => {
   });
 
   ws.on("close", () => {
-    console.log("Client disconnected");
+    console.info("Client disconnected");
     clients.delete(ws);
   });
 
@@ -72,7 +72,7 @@ app.use(
 // Start server
 const PORT = process.env.PORT || 80;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`WebSocket server is ready`);
-  console.log(`HTTP server is ready`);
+  console.info(`Server running on port ${PORT}`);
+  console.info(`WebSocket server is ready`);
+  console.info(`HTTP server is ready`);
 });

@@ -105,7 +105,7 @@ export const DataContextProvider: React.FC<DataContextProviderProps> = ({
   useEffect(() => {
     if (socket) {
       socket.onopen = () => {
-        console.log("WebSocket connection opened");
+        console.info("WebSocket connection opened");
       };
     }
   }, [socket]);
