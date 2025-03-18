@@ -3,7 +3,7 @@ import { WebSocket, WebSocketServer } from "ws";
 import cors from "cors";
 import { createServer } from "http";
 import express from "express";
-import { handleWebsocketMessage } from "./src/websocket";
+import { handleWebsocketMessage } from "./websocket";
 import profileRoutes from "./routes/profile";
 
 const app = express();

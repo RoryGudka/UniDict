@@ -2,9 +2,9 @@ import { Box, Button, Typography } from "@mui/material";
 
 import CustomInput from "@/_components/CustomInput";
 import { SetState } from "@/_lib/model";
+import { useSearchParams } from "next/navigation";
 
 interface Props {
-  email: string;
   code: string;
   setCode: SetState<string>;
   newPassword: string;
@@ -13,13 +13,15 @@ interface Props {
 }
 
 const ConfirmResetPasswordForm = ({
-  email,
   code,
   setCode,
   newPassword,
   setNewPassword,
   onSubmit,
 }: Props) => {
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
+
   return (
     <Box display="flex" flexDirection="column" gap="24px">
       <Typography

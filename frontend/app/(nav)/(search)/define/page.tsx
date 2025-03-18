@@ -4,12 +4,15 @@ import React, { useRef } from "react";
 
 import { Box } from "@mui/material";
 import DictionaryEntry from "@/(nav)/(search)/define/_components/DictionaryEntry";
+import EmptyState from "@/(nav)/(search)/define/_components/EmptyState";
+import Header from "@/(nav)/(search)/_components/Header";
 import LoadingSkeleton from "@/(nav)/(search)/define/_components/LoadingSkeleton";
 import { Message } from "@/_lib/model";
 import SearchInput from "@/(nav)/(search)/define/_components/SearchInput";
 import { createId } from "@/_lib/misc";
 import { produce } from "immer";
 import { useDataContext } from "@/_contexts/DataContext";
+import { useUser } from "@/_contexts/UserContext";
 
 const DictionaryPage: React.FC = () => {
   const {
@@ -23,6 +26,9 @@ const DictionaryPage: React.FC = () => {
     parts,
     entries,
   } = useDataContext();
+  const { profile } = useUser();
+  const { provider, learningLanguages } = profile;
+  const { entryGenerationPrompt } = learningLanguages[learningLang];
 
   const responseWindowRef = useRef<HTMLDivElement>(null);
 
@@ -40,10 +46,11 @@ const DictionaryPage: React.FC = () => {
       JSON.stringify({
         api: "search",
         requestId: id,
-        provider: "openai",
+        provider,
         learningLang,
         nativeLang,
         content: search,
+        instructions: entryGenerationPrompt,
       })
     );
   };
@@ -64,7 +71,7 @@ const DictionaryPage: React.FC = () => {
       JSON.stringify({
         api: "get_entry_modification",
         requestId: id,
-        provider: "openai",
+        provider,
         learningLang,
         nativeLang,
         entryId,
@@ -102,7 +109,7 @@ const DictionaryPage: React.FC = () => {
       JSON.stringify({
         api: "entry_converse",
         requestId: id,
-        provider: "openai",
+        provider,
         learningLang,
         nativeLang,
         entryId,
@@ -115,6 +122,8 @@ const DictionaryPage: React.FC = () => {
 
   return (
     <>
+      <Header title="Dictionary" />
+
       <Box width="100%" pb="16px">
         <SearchInput onSend={handleSend} />
       </Box>
@@ -165,13 +174,7 @@ const DictionaryPage: React.FC = () => {
         ) : isLoading ? (
           <LoadingSkeleton />
         ) : (
-          <Box color="#888888" pt="24px">
-            Uni-Dictionary is an AI powered universal dictionary intended to be
-            used as a tool for learning languages. Get dynamic dictionary
-            entries in any format you need, expand on them with custom
-            information buttons, and chat with Deepseek about them to gain a
-            deep understanding of any words or phrases you want to learn.
-          </Box>
+          <EmptyState />
         )}
       </div>
     </>

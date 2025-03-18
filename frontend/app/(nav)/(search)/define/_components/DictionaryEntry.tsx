@@ -27,7 +27,7 @@ const DictionaryEntry: React.FC<Props> = ({
   const detail = details?.[index];
   const messages: Message[] = detail?.messages?.length
     ? detail.messages
-    : [{ source: "deepseek", content: "What would you like to know?" }];
+    : [{ source: "assistant", content: "What would you like to know?" }];
 
   const handleSend = async (question: string) => {
     const newMessages = [

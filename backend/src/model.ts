@@ -7,6 +7,7 @@ export interface SearchRequest {
   nativeLang: string;
   content: string;
   provider: Provider;
+  instructions: string;
 }
 
 export interface TranslateRequest {
@@ -16,6 +17,7 @@ export interface TranslateRequest {
   nativeLang: string;
   content: string;
   provider: Provider;
+  instructions: string;
 }
 
 export interface GetEntryModificationRequest {
@@ -29,6 +31,11 @@ export interface GetEntryModificationRequest {
   provider: Provider;
 }
 
+export interface Message {
+  source: "assistant" | "user";
+  content: string;
+}
+
 export interface EntryConverseRequest {
   api: "entry_converse";
   requestId: string;
@@ -37,7 +44,7 @@ export interface EntryConverseRequest {
   learningLang: string;
   nativeLang: string;
   content: string;
-  messages: { source: "user" | "deepseek"; content: string }[];
+  messages: Message[];
   provider: Provider;
 }
 
@@ -48,7 +55,7 @@ export interface TranslationConverseRequest {
   learningLang: string;
   nativeLang: string;
   content: string;
-  messages: { source: "user" | "deepseek"; content: string }[];
+  messages: Message[];
   provider: Provider;
 }
 

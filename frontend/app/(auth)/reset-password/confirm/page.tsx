@@ -1,23 +1,25 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 import ConfirmResetPasswordForm from "@/(auth)/_components/ConfirmResetPasswordForm";
 import { confirmResetPassword } from "aws-amplify/auth";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/_contexts/ToastContext";
 
 export default function ConfirmResetPasswordPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const email = searchParams.get("email") || "";
   const { showToast } = useToast();
 
   const handleConfirmResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
+      const params = window.location.search;
+      const email = new URLSearchParams(params).get("email") || "";
+
       await confirmResetPassword({
         username: email,
         confirmationCode: code,
@@ -31,13 +33,14 @@ export default function ConfirmResetPasswordPage() {
   };
 
   return (
-    <ConfirmResetPasswordForm
-      email={email}
-      code={code}
-      setCode={setCode}
-      newPassword={newPassword}
-      setNewPassword={setNewPassword}
-      onSubmit={handleConfirmResetPassword}
-    />
+    <Suspense fallback={<></>}>
+      <ConfirmResetPasswordForm
+        code={code}
+        setCode={setCode}
+        newPassword={newPassword}
+        setNewPassword={setNewPassword}
+        onSubmit={handleConfirmResetPassword}
+      />
+    </Suspense>
   );
 }

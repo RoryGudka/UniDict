@@ -1,6 +1,7 @@
+import { Message, Provider } from "./model";
+
 import { ChatCompletionCreateParams } from "openai/resources";
 import OpenAI from "openai";
-import { Provider } from "./model";
 import { WebSocket } from "ws";
 import { nanoid } from "nanoid";
 
@@ -349,6 +350,7 @@ interface GetEntryDetailParams {
   entryId: string;
   entry: string;
   detailId: string;
+  instructions: string;
 }
 
 export const getEntryDetail = async ({
@@ -360,6 +362,7 @@ export const getEntryDetail = async ({
   entryId,
   entry,
   detailId,
+  instructions,
 }: GetEntryDetailParams) => {
   const addEntryDetail = (value: string) => {
     sendGetEntryDetailMessage({
@@ -376,12 +379,16 @@ export const getEntryDetail = async ({
     "`User learning language: Chinese` `User native language: Korean` `User: 谢天谢地` `Response: **xiè tiān xiè dì**\n*감탄사*\n1. 다행스럽게 생각하거나 안도할 때 쓰는 말\n감탄사\n2. 무슨 일이 잘 되어 감사하거나 안심할 때 사용하는 표현.`",
   ]);
 
+  const additionalInstructions = instructions
+    ? `\nUser added instructions: ${instructions}`
+    : "";
+
   const stream = await makeChatCompletionsRequest({
     provider,
     messages: [
       {
         role: "system",
-        content: `You are an entry generator for a universal dictionary application. Your goal is to assist the user, whose native language is ${nativeLang}, in learning ${learningLang}. If their native language is not English, do not respond in English. Give a brief list of possible definitions and their parts of speech. If applicable for the language/word do not forget the reading (i.e. pinyin or furigana).\n\n${examples}\n\nUser learning language: ${learningLang}\nUser native language: ${nativeLang}`,
+        content: `You are an entry generator for a universal dictionary application. Your goal is to assist the user, whose native language is ${nativeLang}, in learning ${learningLang}. If their native language is not English, do not respond in English. Give a brief list of possible definitions and their parts of speech. If applicable for the language/word do not forget the reading (i.e. pinyin or furigana).\n\n${examples}\n\nUser learning language: ${learningLang}\nUser native language: ${nativeLang}${additionalInstructions}`,
       },
       { role: "user", content: entry },
     ],
@@ -402,6 +409,7 @@ interface GetEntryDetailsParams {
   learningLang: string;
   nativeLang: string;
   entries: { id: string; value: string }[];
+  instructions: string;
 }
 
 export const getEntryDetails = async ({
@@ -414,6 +422,7 @@ export const getEntryDetails = async ({
       entryId: id,
       entry: value,
       detailId: createId(),
+      instructions: params.instructions,
     });
   }
 };
@@ -477,7 +486,7 @@ interface GetEntryConversationParams {
   entryId: string;
   detailId: string;
   content: string;
-  messages: { source: "user" | "deepseek"; content: string }[];
+  messages: { source: "user" | "assistant"; content: string }[];
 }
 
 export const getEntryConversation = async ({
@@ -511,7 +520,7 @@ export const getEntryConversation = async ({
       ...messages.map(
         ({ source, content }) =>
           ({
-            role: source === "deepseek" ? "system" : "user",
+            role: source === "assistant" ? "system" : "user",
             content,
           } as { role: "system" | "user"; content: string })
       ),
@@ -531,6 +540,7 @@ interface GetTranslationParams {
   learningLang: string;
   nativeLang: string;
   content: string;
+  instructions: string;
 }
 
 export const getTranslation = async ({
@@ -540,17 +550,22 @@ export const getTranslation = async ({
   learningLang,
   nativeLang,
   content,
+  instructions,
 }: GetTranslationParams) => {
   const addDetailSegment = (value: string) => {
     sendGetTranslationMessage({ ws, requestId, segment: value });
   };
+
+  const additionalInstructions = instructions
+    ? `\nUser added instructions: ${instructions}`
+    : "";
 
   const stream = await makeChatCompletionsRequest({
     provider,
     messages: [
       {
         role: "system",
-        content: `You are a translator for a universal dictionary application. Your goal is to assist the user, whose native language is ${nativeLang}, in learning ${learningLang}. If their native language is not English, do not respond in English. Give a translation for the following phrase or sentence, explain any words or grammar patterns that might be confusing. Be concise but thorough.\n\nUser learning language: ${learningLang}\nUser native language: ${nativeLang}`,
+        content: `You are a translator for a universal dictionary application. Your goal is to assist the user, whose native language is ${nativeLang}, in learning ${learningLang}. If their native language is not English, do not respond in English. Give a translation for the following phrase or sentence, explain any words or grammar patterns that might be confusing. Be concise but thorough.\n\nUser learning language: ${learningLang}\nUser native language: ${nativeLang}${additionalInstructions}`,
       },
       { role: "user", content },
     ],
@@ -570,7 +585,7 @@ interface GetTranslationConversationParams {
   nativeLang: string;
   translationId: string;
   content: string;
-  messages: { source: "user" | "deepseek"; content: string }[];
+  messages: Message[];
 }
 
 export const getTranslationConversation = async ({
@@ -602,7 +617,7 @@ export const getTranslationConversation = async ({
       ...messages.map(
         ({ source, content }) =>
           ({
-            role: source === "deepseek" ? "system" : "user",
+            role: source === "assistant" ? "system" : "user",
             content,
           } as { role: "system" | "user"; content: string })
       ),

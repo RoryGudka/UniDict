@@ -1,11 +1,12 @@
 "use client";
 
-import { Entry, Part, Request, SetState, Translation } from "../_lib/model";
+import { Entry, Part, Request, SetState, Translation } from "@/_lib/model";
 import React, { useCallback, useEffect, useState } from "react";
 import { createContext, useContext } from "react";
-import { getHandlers, handleMessage } from "../_lib/actions";
+import { getHandlers, handleMessage } from "@/_lib/actions";
 
-import { useWebsocket } from "../_lib/websocket";
+import { useUser } from "@/_contexts/UserContext";
+import { useWebsocket } from "@/_lib/websocket";
 
 interface DataContextType {
   nativeLang: string;
@@ -41,12 +42,14 @@ interface DataContextProviderProps {
 export const DataContextProvider: React.FC<DataContextProviderProps> = ({
   children,
 }) => {
-  const [learningLang, setLearningLang] = useState("Japanese");
-  const [nativeLang, setNativeLang] = useState("English");
+  const { user, profile, isLoading: isUserLoading } = useUser();
+  const [learningLang, setLearningLang] = useState(profile?.learningLanguage);
+  const [nativeLang, setNativeLang] = useState(profile?.nativeLanguage);
   const [requests, setRequests] = useState<Request[]>([]);
   const [parts, setParts] = useState<Part[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [translations, setTranslations] = useState<Translation[]>([]);
+  const hasProfile = !isUserLoading && !!user;
 
   const isLoading = !!requests.length;
 
@@ -74,8 +77,8 @@ export const DataContextProvider: React.FC<DataContextProviderProps> = ({
   const { socket, reconnect } = useWebsocket({ onMessage, onError });
 
   const value = {
-    nativeLang,
-    learningLang,
+    nativeLang: hasProfile ? profile.nativeLanguage : nativeLang,
+    learningLang: hasProfile ? profile.learningLanguage : learningLang,
     requests,
     parts,
     entries,

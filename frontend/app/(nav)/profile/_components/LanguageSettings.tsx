@@ -33,11 +33,9 @@ const LanguageGenerationSettings: React.FC<Props> = ({
         sx={{ cursor: "pointer" }}
       >
         <ExpandMore
-          sx={{
-            transform: open ? "rotate(180deg)" : "rotate(0deg)",
-          }}
+          sx={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
         />
-        <Typography fontWeight={600}>{language} settings</Typography>
+        <Typography fontWeight={600}>{language} </Typography>
       </Box>
       <Collapse in={open}>
         <Box py="16px" px="8px">
@@ -76,7 +74,7 @@ const LanguageGenerationSettings: React.FC<Props> = ({
             <Box display="flex" flexDirection="column" gap="24px">
               {settings.entryModifiers.map((modifier, index) => (
                 <Box
-                  key={modifier.name}
+                  key={modifier.id}
                   display="flex"
                   flexDirection="column"
                   gap="16px"

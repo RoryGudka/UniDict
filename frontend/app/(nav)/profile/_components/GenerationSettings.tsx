@@ -11,19 +11,22 @@ import {
   EntryModifier,
   LanguageSettings,
   Profile,
-  defaultLanguageSettings,
+  getDefaultLanguageSettings,
 } from "@/_lib/model";
 import { useEffect, useState } from "react";
 
 import CustomInput from "@/_components/CustomInput";
+import Header from "@/(nav)/profile/_components/Header";
 import LanguageGenerationSettings from "./LanguageSettings";
 import LearningLanguages from "./LearningLanguages";
 import _ from "lodash";
+import { createId } from "@/_lib/misc";
 import { put } from "@/_lib/api";
 import { useUser } from "@/_contexts/UserContext";
+import { useWarnIfUnsavedChanges } from "@/_lib/misc";
 
 const GenerationSettings: React.FC = () => {
-  const { profile, setProfile, authToken } = useUser();
+  const { profile, setProfile, authToken, signOutUser } = useUser();
   const [editCache, setEditCache] = useState<Profile>(profile);
 
   useEffect(() => {
@@ -57,7 +60,7 @@ const GenerationSettings: React.FC = () => {
         ...prev,
         learningLanguages: {
           ...prev.learningLanguages,
-          [language]: { ...defaultLanguageSettings },
+          [language]: getDefaultLanguageSettings(),
         },
       }));
     }
@@ -89,6 +92,7 @@ const GenerationSettings: React.FC = () => {
 
   const addModifier = (language: string) => {
     const newModifier: EntryModifier = {
+      id: createId(),
       name: "",
       prompt: "",
     };
@@ -136,93 +140,94 @@ const GenerationSettings: React.FC = () => {
     }
   };
 
+  useWarnIfUnsavedChanges(!_.isEqual(profile, editCache));
+
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      gap="24px"
-      maxWidth="600px"
-      width="100%"
-      py="36px"
-    >
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Typography textAlign="center" fontSize="18px" fontWeight={600}>
-          Generation Settings
-        </Typography>
-        <Button
-          variant="text"
-          color="primary"
-          onClick={handleSave}
-          disabled={_.isEqual(profile, editCache)}
-        >
-          Save Changes
+    <>
+      <Header
+        title="Generation settings"
+        disabled={_.isEqual(profile, editCache)}
+        onSave={handleSave}
+      />
+
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap="24px"
+        maxWidth="600px"
+        width="100%"
+      >
+        <Card>
+          <CardContent>
+            <Box display="flex" flexDirection="column" gap="16px">
+              <Typography fontWeight={600}>AI Provider</Typography>
+              <RadioGroup
+                value={editCache.provider}
+                onChange={(e) => handleProviderChange(e.target.value)}
+              >
+                <Box display=" flex" alignItems="center">
+                  <Radio value="openai" />
+                  <Typography>OpenAI</Typography>
+                </Box>
+                <Box display="flex" alignItems="center">
+                  <Radio value="deepseek" />
+                  <Typography>Deepseek</Typography>
+                </Box>
+              </RadioGroup>
+            </Box>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <Box display="flex" flexDirection="column" gap="16px">
+              <Typography fontWeight={600}>Native Language</Typography>
+              <CustomInput
+                value={editCache.nativeLanguage}
+                onChange={(e) => handleNativeLanguageChange(e.target.value)}
+                placeholder="e.g. English"
+              />
+            </Box>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <LearningLanguages
+              profile={editCache}
+              onSelect={selectLearningLanguage}
+              onAdd={addLearningLanguage}
+              onRemove={removeLearningLanguage}
+            />
+          </CardContent>
+        </Card>
+
+        {!!Object.keys(editCache.learningLanguages).length && (
+          <Card>
+            <CardContent>
+              <Typography fontWeight={600}>Generation settings</Typography>
+              {Object.entries(editCache.learningLanguages).map(
+                ([language, settings]) => (
+                  <LanguageGenerationSettings
+                    key={language}
+                    language={language}
+                    settings={settings}
+                    onUpdate={(s) => updateLanguageSettings(language, s)}
+                    onRemoveModifier={(index) =>
+                      removeModifier(language, index)
+                    }
+                    onAddModifier={() => addModifier(language)}
+                  />
+                )
+              )}
+            </CardContent>
+          </Card>
+        )}
+        <Button onClick={() => signOutUser()} color="error">
+          Sign out
         </Button>
       </Box>
-
-      <Card>
-        <CardContent>
-          <Box display="flex" flexDirection="column" gap="16px">
-            <Typography fontWeight={600}>AI Provider</Typography>
-            <RadioGroup
-              value={editCache.provider}
-              onChange={(e) => handleProviderChange(e.target.value)}
-            >
-              <Box display="flex" alignItems="center">
-                <Radio value="openai" />
-                <Typography>OpenAI</Typography>
-              </Box>
-              <Box display="flex" alignItems="center">
-                <Radio value="deepseek" />
-                <Typography>Deepseek</Typography>
-              </Box>
-            </RadioGroup>
-          </Box>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent>
-          <Box display="flex" flexDirection="column" gap="16px">
-            <Typography fontWeight={600}>Native Language</Typography>
-            <CustomInput
-              value={editCache.nativeLanguage}
-              onChange={(e) => handleNativeLanguageChange(e.target.value)}
-              placeholder="e.g. English"
-            />
-          </Box>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent>
-          <LearningLanguages
-            profile={editCache}
-            onSelect={selectLearningLanguage}
-            onAdd={addLearningLanguage}
-            onRemove={removeLearningLanguage}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent>
-          <Typography fontWeight={600}>Generation settings</Typography>
-          {Object.entries(editCache.learningLanguages).map(
-            ([language, settings]) => (
-              <LanguageGenerationSettings
-                key={language}
-                language={language}
-                settings={settings}
-                onUpdate={(s) => updateLanguageSettings(language, s)}
-                onRemoveModifier={(index) => removeModifier(language, index)}
-                onAddModifier={() => addModifier(language)}
-              />
-            )
-          )}
-        </CardContent>
-      </Card>
-      <Box height="64px" />
-    </Box>
+    </>
   );
 };
 

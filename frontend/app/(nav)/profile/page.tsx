@@ -1,19 +1,9 @@
 "use client";
 
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Link,
-  Paper,
-  TextField,
-  Typography,
-} from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { get, put } from "@/_lib/api";
+import { Box, Link, Paper, Typography } from "@mui/material";
 
 import GenerationSettings from "./_components/GenerationSettings";
-import { Profile } from "@/_lib/model";
+import React from "react";
 import { useUser } from "@/_contexts/UserContext";
 
 const ProfilePage: React.FC = () => {

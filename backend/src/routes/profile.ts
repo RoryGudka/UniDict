@@ -1,9 +1,9 @@
-import { getItem, putItem } from "../src/database";
+import { getItem, putItem } from "../database";
 
-import { ApiResponse } from "../src/api/ApiResponse";
+import { ApiResponse } from "../api/ApiResponse";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
-import { Provider } from "../src/model";
-import { apiHandler } from "../src/api/apiHandler";
+import { Provider } from "../model";
+import { apiHandler } from "../api/apiHandler";
 import express from "express";
 
 interface EntryModifier {

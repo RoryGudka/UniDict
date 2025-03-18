@@ -3,23 +3,24 @@ import { useEffect, useState } from "react";
 
 import CustomInput from "@/_components/CustomInput";
 import { resendSignUpCode } from "aws-amplify/auth";
+import { useSearchParams } from "next/navigation";
 import { useToast } from "@/_contexts/ToastContext";
 
 interface ConfirmSignUpFormProps {
-  email: string;
   code: string;
   setCode: (code: string) => void;
   onSubmit: (e: React.FormEvent) => Promise<void>;
 }
 
 export default function ConfirmSignUpForm({
-  email,
   code,
   setCode,
   onSubmit,
 }: ConfirmSignUpFormProps) {
   const [cooldown, setCooldown] = useState(0);
   const { showToast } = useToast();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
 
   useEffect(() => {
     if (cooldown > 0) {

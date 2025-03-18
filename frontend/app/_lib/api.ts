@@ -1,5 +1,4 @@
 import { ApiError } from "@/_types/errors";
-import { getCurrentUser } from "@aws-amplify/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 

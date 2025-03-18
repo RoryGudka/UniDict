@@ -15,17 +15,26 @@ export default function AuthLayout({
       justifyContent="center"
       minHeight="80vh"
     >
-      <Paper
-        sx={{
-          padding: "24px",
-          maxWidth: 400,
-          width: "100%",
-          boxShadow: "rgba(0, 0, 0, 0.05) 0px 14px 38px",
-        }}
+      <Box
+        width="100%"
+        maxWidth="400px"
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
       >
-        <AuthedRedirect />
-        {children}
-      </Paper>
+        <Paper
+          sx={{
+            padding: "24px",
+            maxWidth: "90vw",
+            width: "100%",
+            boxShadow: "rgba(0, 0, 0, 0.05) 0px 14px 38px",
+          }}
+        >
+          <AuthedRedirect />
+          {children}
+        </Paper>
+      </Box>
     </Box>
   );
 }

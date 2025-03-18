@@ -1,5 +1,5 @@
 import { Box, IconButton } from "@mui/material";
-import { SetState, defaultLanguageSettings } from "@/_lib/model";
+import { SetState, getDefaultLanguageSettings } from "@/_lib/model";
 
 import { CiCircleQuestion } from "react-icons/ci";
 import { useDataContext } from "@/_contexts/DataContext";
@@ -22,7 +22,7 @@ const DictionaryEntryModifiers: React.FC<Props> = ({
   const { learningLang } = useDataContext();
   const modifiers =
     profile.learningLanguages?.[learningLang]?.entryModifiers ||
-    defaultLanguageSettings.entryModifiers;
+    getDefaultLanguageSettings().entryModifiers;
 
   return (
     <Box
@@ -32,8 +32,9 @@ const DictionaryEntryModifiers: React.FC<Props> = ({
       pt="8px"
     >
       <Box display="flex" alignItems="center" gap="8px">
-        {...modifiers.map(({ name, prompt }) => (
+        {modifiers.map(({ id, name, prompt }) => (
           <u
+            key={id}
             style={{ cursor: "pointer" }}
             onClick={() => onModifyEntry(entry, prompt)}
           >

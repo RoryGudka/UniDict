@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  LanguageSettings,
   Profile,
   SetState,
   User,

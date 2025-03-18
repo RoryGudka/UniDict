@@ -29,7 +29,7 @@ const search = async (ws: WebSocket, payload: SearchRequest) => {
     await getEntryDetails({ ...payload, entries, ws });
     sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
-    console.error("Error calling DeepSeek API:", error);
+    console.error("Error calling assistant API:", error);
     ws.send("Error: Failed to process request");
   }
 };
@@ -40,7 +40,7 @@ const translate = async (ws: WebSocket, payload: TranslateRequest) => {
     await getTranslation({ ...payload, ws });
     sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
-    console.error("Error calling DeepSeek API:", error);
+    console.error("Error calling assistant API:", error);
     ws.send("Error: Failed to process request");
   }
 };
@@ -54,7 +54,7 @@ const modifyEntry = async (
     await getEntryModification({ ...payload, ws });
     sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
-    console.error("Error calling DeepSeek API:", error);
+    console.error("Error calling assistant API:", error);
     ws.send("Error: Failed to process request");
   }
 };
@@ -65,7 +65,7 @@ const entryConverse = async (ws: WebSocket, payload: EntryConverseRequest) => {
     await getEntryConversation({ ...payload, ws });
     sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
-    console.error("Error calling DeepSeek API:", error);
+    console.error("Error calling assistant API:", error);
     ws.send("Error: Failed to process request");
   }
 };
@@ -79,7 +79,7 @@ const translationConverse = async (
     await getTranslationConversation({ ...payload, ws });
     sendRequestDoneMessage({ ws, requestId });
   } catch (error) {
-    console.error("Error calling DeepSeek API:", error);
+    console.error("Error calling assistant API:", error);
     ws.send("Error: Failed to process request");
   }
 };

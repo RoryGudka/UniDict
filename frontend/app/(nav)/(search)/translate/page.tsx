@@ -1,25 +1,21 @@
 "use client";
 
 import { Box, Collapse } from "@mui/material";
-import {
-  Entry,
-  Message,
-  Part,
-  Request,
-  SetState,
-  Translation,
-} from "@/_lib/model";
 import React, { useRef, useState } from "react";
 
 import Conversation from "@/(nav)/(search)/_components/Conversation";
+import EmptyState from "@/(nav)/(search)/translate/_components/EmptyState";
+import Header from "@/(nav)/(search)/_components/Header";
 import IndexSelect from "@/(nav)/(search)/_components/IndexSelect";
 import LoadingSkeleton from "@/(nav)/(search)/define/_components/LoadingSkeleton";
 import Markdown from "@/(nav)/_components/Markdown";
+import { Message } from "@/_lib/model";
 import SearchInput from "@/(nav)/(search)/define/_components/SearchInput";
 import TranslationModifiers from "@/(nav)/(search)/translate/_components/TranslationModifiers";
 import { createId } from "@/_lib/misc";
 import { produce } from "immer";
 import { useDataContext } from "@/_contexts/DataContext";
+import { useUser } from "@/_contexts/UserContext";
 
 const TranslatorPage: React.FC = () => {
   const {
@@ -33,6 +29,9 @@ const TranslatorPage: React.FC = () => {
     setRequests,
     translations,
   } = useDataContext();
+  const { profile } = useUser();
+  const { provider, learningLanguages } = profile;
+  const { translationGenerationPrompt } = learningLanguages[learningLang];
 
   const responseWindowRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
@@ -42,7 +41,7 @@ const TranslatorPage: React.FC = () => {
   const content = translation?.value || "";
   const messages: Message[] = translation?.messages?.length
     ? translation.messages
-    : [{ source: "deepseek", content: "What would you like to know?" }];
+    : [{ source: "assistant", content: "What would you like to know?" }];
 
   const handleSend = (search: string) => {
     if (isLoading) return;
@@ -59,10 +58,11 @@ const TranslatorPage: React.FC = () => {
       JSON.stringify({
         api: "translate",
         requestId: id,
-        provider: "openai",
+        provider,
         learningLang,
         nativeLang,
         content: search,
+        instructions: translationGenerationPrompt,
       })
     );
   };
@@ -91,7 +91,7 @@ const TranslatorPage: React.FC = () => {
       JSON.stringify({
         api: "translation_converse",
         requestId: id,
-        provider: "openai",
+        provider,
         learningLang,
         nativeLang,
         translationId,
@@ -103,6 +103,8 @@ const TranslatorPage: React.FC = () => {
 
   return (
     <>
+      <Header title="Translator" />
+
       <Box width="100%" pb="16px">
         <SearchInput onSend={handleSend} />
       </Box>
@@ -136,13 +138,7 @@ const TranslatorPage: React.FC = () => {
         ) : isLoading ? (
           <LoadingSkeleton />
         ) : (
-          <Box color="#888888" pt="24px">
-            Uni-Dictionary is an AI powered universal dictionary intended to be
-            used as a tool for learning languages. Get dynamic dictionary
-            entries in any format you need, expand on them with custom
-            information buttons, and chat with Deepseek about them to gain a
-            deep understanding of any words or phrases you want to learn.
-          </Box>
+          <EmptyState />
         )}
       </div>
     </>

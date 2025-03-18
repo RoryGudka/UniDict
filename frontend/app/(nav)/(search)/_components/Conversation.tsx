@@ -1,6 +1,6 @@
+import AssistantMessage from "@/(nav)/(search)/_components/AssistantMessage";
 import { Box } from "@mui/material";
 import ConversationInput from "@/(nav)/(search)/_components/ConversationInput";
-import DeepseekMessage from "@/(nav)/(search)/_components/DeepseekMessage";
 import { Message } from "@/_lib/model";
 import UserMessage from "@/(nav)/(search)/_components/UserMessage";
 
@@ -14,8 +14,8 @@ const Conversation: React.FC<Props> = ({ messages, onSend }) => {
     <>
       <Box display="flex" flexDirection="column" gap="16px" pb="24px">
         {messages.map(({ source, content }, i) => {
-          return source === "deepseek" ? (
-            <DeepseekMessage key={i} message={content} />
+          return source === "assistant" ? (
+            <AssistantMessage key={i} message={content} />
           ) : (
             <UserMessage key={i} message={content} />
           );

@@ -1,3 +1,5 @@
+import { createId } from "@/_lib/misc";
+
 export interface Request {
   id: string;
   type: string;
@@ -9,7 +11,7 @@ export interface Part {
 }
 
 export interface Message {
-  source: "deepseek" | "user";
+  source: "assistant" | "user";
   content: string;
 }
 
@@ -40,6 +42,7 @@ export interface User {
 }
 
 export interface EntryModifier {
+  id: string;
   name: string;
   prompt: string;
 }
@@ -57,26 +60,28 @@ export interface Profile {
   provider: "openai" | "deepseek";
 }
 
-export const defaultLanguageSettings: LanguageSettings = {
+export const getDefaultLanguageSettings = (): LanguageSettings => ({
   entryGenerationPrompt: "",
   entryModifiers: [
     {
+      id: createId(),
       name: "Examples",
       prompt:
         "Add example sentences for each definition of this dictionary entry",
     },
     {
+      id: createId(),
       name: "Conjugations",
       prompt:
         "Add a table of conjugations at the end of this dictionary entry; add a divider between the dictionary entry and the table, give the table the name 'Conjugations', and give it the columns 'Form' and 'Conjugation'",
     },
   ],
   translationGenerationPrompt: "",
-};
+});
 
 export const defaultNoUserProfile: Profile = {
   nativeLanguage: "English",
-  learningLanguages: { Japanese: defaultLanguageSettings },
+  learningLanguages: { Japanese: getDefaultLanguageSettings() },
   learningLanguage: "Japanese",
   provider: "openai",
 };

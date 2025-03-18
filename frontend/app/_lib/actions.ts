@@ -92,8 +92,8 @@ const getEntryConversationHandler: Handler =
         const detail = entry.details?.find((detail) => detail.id === detailId);
         if (!detail?.messages) return;
         const message = detail.messages[detail.messages.length - 1];
-        if (message.source !== "deepseek") {
-          detail.messages.push({ source: "deepseek", content: segment });
+        if (message.source !== "assistant") {
+          detail.messages.push({ source: "assistant", content: segment });
         } else {
           message.content += segment;
         }
@@ -134,8 +134,8 @@ const getTranslationConversationHandler: Handler =
         if (!translation) return prev;
         if (!translation?.messages) return;
         const message = translation.messages[translation.messages.length - 1];
-        if (message.source !== "deepseek") {
-          translation.messages.push({ source: "deepseek", content: segment });
+        if (message.source !== "assistant") {
+          translation.messages.push({ source: "assistant", content: segment });
         } else {
           message.content += segment;
         }
