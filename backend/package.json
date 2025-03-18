@@ -5,7 +5,7 @@
   "description": "A TypeScript Express.js server with WebSocket support",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "dev": "nodemon --exec tsx src/server.ts"
   },
@@ -20,6 +20,7 @@
     "https": "^1.0.0",
     "nanoid": "^5.0.9",
     "openai": "^4.28.0",
+    "tsc-alias": "^1.8.11",
     "tsx": "^4.19.2",
     "ws": "^8.13.0",
     "wscat": "^6.0.1"

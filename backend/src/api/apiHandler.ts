@@ -1,7 +1,7 @@
-import { ApiContext, ApiHandlerResponse } from "./model";
+import { ApiContext, ApiHandlerResponse } from "@/api/model";
 import { NextFunction, Request, Response } from "express";
 
-import { ApiError } from "./ApiError";
+import { ApiError } from "@/api/ApiError";
 import { CognitoIdTokenPayload } from "aws-jwt-verify/jwt-model";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 

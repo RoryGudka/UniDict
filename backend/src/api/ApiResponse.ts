@@ -1,4 +1,4 @@
-import { ApiHandlerResponse } from "./model";
+import { ApiHandlerResponse } from "@/api/model";
 
 export class ApiResponse {
   static ok(payload: any = {}): ApiHandlerResponse {

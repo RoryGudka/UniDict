@@ -1,5 +1,5 @@
-import { ApiHandlerResponse } from "./model";
-import { ApiResponse } from "./ApiResponse";
+import { ApiHandlerResponse } from "@/api/model";
+import { ApiResponse } from "@/api/ApiResponse";
 
 export class ApiError extends Error {
   private readonly msg: string;

@@ -1,4 +1,4 @@
-import { Message, Provider } from "./model";
+import { Message, Provider } from "@/model";
 
 import { ChatCompletionCreateParams } from "openai/resources";
 import OpenAI from "openai";

@@ -7,7 +7,7 @@ import {
   SearchRequest,
   TranslateRequest,
   TranslationConverseRequest,
-} from "./model.js";
+} from "@/model";
 import { RawData, WebSocket } from "ws";
 import {
   getEntries,
@@ -18,7 +18,7 @@ import {
   getTranslation,
   getTranslationConversation,
   sendRequestDoneMessage,
-} from "./common.js";
+} from "@/common";
 
 const search = async (ws: WebSocket, payload: SearchRequest) => {
   const { requestId } = payload;
