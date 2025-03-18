@@ -10,6 +10,17 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  rewrites: async () => {
+    return [
+      {
+        source: "/ingest/:path*",
+        destination: `${
+          process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://app.posthog.com"
+        }/:path*`,
+      },
+    ];
+  },
+  skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;
