@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
   verification: {
     google: "ZUssnfvapIAQTutkCM1WIlwnNVMWHSkUs3Lwwa8azaA",
-    yandex: "6012121a1d4c0ecc",
+    yandex: "a8e159fbfdcd9c9a",
   },
   icons: {
     icon: "/favicon.ico",
