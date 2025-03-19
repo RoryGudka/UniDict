@@ -12,12 +12,16 @@ interface DataContextType {
   nativeLang: string;
   learningLang: string;
   requests: Request[];
+  lastSearch: string;
+  part: string;
   parts: Part[];
   entries: Entry[];
   translations: Translation[];
   setNativeLang: SetState<string>;
   setLearningLang: SetState<string>;
   setRequests: SetState<Request[]>;
+  setLastSearch: SetState<string>;
+  setPart: SetState<string>;
   setParts: SetState<Part[]>;
   setEntries: SetState<Entry[]>;
   setTranslations: SetState<Translation[]>;
@@ -46,6 +50,8 @@ export const DataContextProvider: React.FC<DataContextProviderProps> = ({
   const [learningLang, setLearningLang] = useState(profile?.learningLanguage);
   const [nativeLang, setNativeLang] = useState(profile?.nativeLanguage);
   const [requests, setRequests] = useState<Request[]>([]);
+  const [lastSearch, setLastSearch] = useState("");
+  const [part, setPart] = useState("");
   const [parts, setParts] = useState<Part[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [translations, setTranslations] = useState<Translation[]>([]);
@@ -80,12 +86,16 @@ export const DataContextProvider: React.FC<DataContextProviderProps> = ({
     nativeLang: hasProfile ? profile.nativeLanguage : nativeLang,
     learningLang: hasProfile ? profile.learningLanguage : learningLang,
     requests,
+    lastSearch,
+    part,
     parts,
     entries,
     translations,
     setNativeLang,
     setLearningLang,
     setRequests,
+    setLastSearch,
+    setPart,
     setParts,
     setEntries,
     setTranslations,

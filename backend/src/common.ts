@@ -233,6 +233,7 @@ interface GetPartsParams {
   requestId: string;
   provider: Provider;
   content: string;
+  generateParts: boolean;
 }
 
 export const getParts = async ({
@@ -240,6 +241,7 @@ export const getParts = async ({
   requestId,
   provider,
   content,
+  generateParts,
 }: GetPartsParams) => {
   let message = "";
   let temp = "";
@@ -248,16 +250,17 @@ export const getParts = async ({
   const addPart = (value: string) => {
     const id = createId();
     parts.push({ id, value });
+    if (!generateParts) return;
     sendGetPartsMessage({ ws, requestId, partId: id, segment: value });
   };
 
   const examples = makeExamples([
-    "`User: The scientist developed the laws of thermodynamics` `Response: The|scientist|developed|the|laws of thermodynamics`",
-    "`User: Thank you for the fabric softener` `Response: Thank you|for|the|fabric softener",
-    "`User: See you later` `Response: see you later`",
-    "`User: 君のことが好きだ` `Response: 君|の|こと|が|好き|だ`",
-    "`User: お前も行ったでしょう` `Response: お前|も|行った|でしょう`",
-    "`User: `君の名は` `Response: 君の名は`",
+    "<user_message>The scientist developed the laws of thermodynamics</user_message><assistant_message>The|scientist|developed|the|laws of thermodynamics</assistant_message>",
+    "<user_message>Thank you for the fabric softener</user_message><assistant_message>Thank you|for|the|fabric softener</assistant_message>",
+    "<user_message>See you later</user_message><assistant_message>see you later</assistant_message>",
+    "<user_message>君のことが好きだ</user_message><assistant_message>君|の|こと|が|好き|だ</assistant_message>",
+    "<user_message>お前も行ったでしょう</user_message><assistant_message>お前|も|行った|でしょう</assistant_message>",
+    "<user_message>君の名は</user_message><assistant_message>君の名は</assistant_message>",
   ]);
 
   const stream = await makeChatCompletionsRequest({
@@ -273,8 +276,10 @@ export const getParts = async ({
 
   for await (const chunk of stream) {
     const content = chunk.choices[0]?.delta?.content;
-    message += content;
-    temp += content;
+    if (content) {
+      message += content;
+      temp += content;
+    }
     if (temp.includes("|")) {
       addPart(temp.split("|")[0]);
       temp = temp.split("|")[1];
@@ -311,9 +316,9 @@ export const getEntries = async ({
   };
 
   const examples = makeExamples([
-    "`Target language: Japanese` `User: 恋人` `Response: 恋人|恋人つなぎ|恋人未満`",
-    "`Target language: Japanese` `User: ?跡` `Response: 足跡|遺跡|追跡|奇跡|筆跡|痕跡|傷跡|形跡|軌跡|史跡`",
-    "`Target language: Korean` `User: Sound` `Response: 소리|하다|든든하다|울리다|온전하다|음향|건실하다|건전하다`",
+    "<system_prompt>Target language: Japanese</system_prompt><user_message>恋人</user_message><assistant_message>恋人|恋人つなぎ|恋人未満</assistant_message>",
+    "<system_prompt>Target language: Japanese</system_prompt><user_message>?跡</user_message><assistant_message>足跡|遺跡|追跡|奇跡|筆跡|痕跡|傷跡|形跡|軌跡|史跡</assistant_message>",
+    "<system_prompt>Target language: Korean</system_prompt><user_message>Sound</user_message><assistant_message>소리|하다|든든하다|울리다|온전하다|음향|건실하다|건전하다</assistant_message>",
   ]);
 
   const stream = await makeChatCompletionsRequest({
@@ -321,7 +326,7 @@ export const getEntries = async ({
     messages: [
       {
         role: "system",
-        content: `You are an entry generator for a universal dictionary application. List dictionary entries that are relevant to use the user's query, using | as a delimiter. Limit: 10.\n\n${examples}\n\nTarget language: ${learningLang}`,
+        content: `You are an entry generator for a universal dictionary application. List dictionary entries that are relevant to use the user's query, using | as a delimiter. If the user sends an entire sentence or more, pick out the most relevant entries. Limit: 3.\n\n${examples}\n\nTarget language: ${learningLang}`,
       },
       { role: "user", content },
     ],
@@ -329,8 +334,10 @@ export const getEntries = async ({
 
   for await (const chunk of stream) {
     const content = chunk.choices[0]?.delta?.content;
-    message += content;
-    temp += content;
+    if (content) {
+      message += content;
+      temp += content;
+    }
     if (temp.includes("|")) {
       addEntry(temp.split("|")[0]);
       temp = temp.split("|")[1];
@@ -375,8 +382,8 @@ export const getEntryDetail = async ({
   };
 
   const examples = makeExamples([
-    "`User learning language: Japanese` `User native language: English` `User: 告白` `Response: **こくはく**\n*Noun, Suru verb, Transitive verb*\n1. confession (to a crime, wrongdoing, etc.); admission\n*Noun, Suru verb, Intransitive verb*\n2. professing one's feelings (to someone one wants to go out with); declaration of love`",
-    "`User learning language: Chinese` `User native language: Korean` `User: 谢天谢地` `Response: **xiè tiān xiè dì**\n*감탄사*\n1. 다행스럽게 생각하거나 안도할 때 쓰는 말\n감탄사\n2. 무슨 일이 잘 되어 감사하거나 안심할 때 사용하는 표현.`",
+    "<system_prompt>User learning language: Japanese</system_prompt><user_message>告白</user_message><assistant_message>こくはく\n*Noun, Suru verb, Transitive verb*\n1. confession (to a crime, wrongdoing, etc.); admission\n*Noun, Suru verb, Intransitive verb*\n2. professing one's feelings (to someone one wants to go out with); declaration of love</assistant_message>",
+    "<system_prompt>User learning language: Chinese</system_prompt><user_message>谢天谢地</user_message><assistant_message>xiè tiān xiè dì\n*감탄사*\n1. 다행스럽게 생각하거나 안도할 때 쓰는 말\n감탄사\n2. 무슨 일이 잘 되어 감사하거나 안심할 때 사용하는 표현.</assistant_message>",
   ]);
 
   const additionalInstructions = instructions

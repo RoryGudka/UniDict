@@ -8,6 +8,7 @@ export interface SearchRequest {
   content: string;
   provider: Provider;
   instructions: string;
+  generateParts: boolean;
 }
 
 export interface TranslateRequest {

@@ -20,9 +20,13 @@ const DictionaryPage: React.FC = () => {
     learningLang,
     isLoading,
     socket,
+    setLastSearch,
+    setPart,
     setParts,
     setEntries,
     setRequests,
+    lastSearch,
+    part,
     parts,
     entries,
   } = useDataContext();
@@ -36,8 +40,37 @@ const DictionaryPage: React.FC = () => {
     if (isLoading) return;
     if (!socket) return;
     if (!search.trim()) return;
+
     const id = createId();
+    setPart("");
     setParts([]);
+    setEntries([]);
+    setLastSearch(search);
+
+    const request = { id, type: "search" };
+    setRequests((prev) => [...prev, request]);
+    socket.send(
+      JSON.stringify({
+        api: "search",
+        requestId: id,
+        provider,
+        learningLang,
+        nativeLang,
+        content: search,
+        instructions: entryGenerationPrompt,
+        generateParts: true,
+      })
+    );
+  };
+
+  const handleSelectPart = (search: string) => {
+    if (isLoading) return;
+    if (!socket) return;
+    if (!search.trim()) return;
+    if (part === search) return handleSend(lastSearch);
+
+    const id = createId();
+    setPart(search);
     setEntries([]);
 
     const request = { id, type: "search" };
@@ -51,6 +84,7 @@ const DictionaryPage: React.FC = () => {
         nativeLang,
         content: search,
         instructions: entryGenerationPrompt,
+        generateParts: false,
       })
     );
   };
@@ -138,12 +172,22 @@ const DictionaryPage: React.FC = () => {
               <Box
                 pb="16px"
                 display="flex"
+                alignItems="center"
                 justifyContent="center"
                 gap="8px"
                 flexWrap="wrap"
               >
+                <span style={{ fontSize: "18px" }}>Parts:</span>
                 {parts.map(({ id, value }) => (
-                  <span key={id} style={{ fontSize: "32px" }}>
+                  <span
+                    key={id}
+                    onClick={() => handleSelectPart(value)}
+                    style={{
+                      fontSize: "18px",
+                      cursor: "pointer",
+                      color: part === value ? "#4e6cf9" : "inherit",
+                    }}
+                  >
                     <u>{value}</u>
                   </span>
                 ))}
