@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     siteName: "Uni-Dictionary",
     url: "https://www.uni-dictionary.com",
-    images: [{ url: "https://www.uni-dictionary.com/icons/icon-512x512.png" }],
+    images: [{ url: "https://www.uni-dictionary.com/og-image.jpg" }],
   },
   twitter: {
     card: "summary_large_image",
