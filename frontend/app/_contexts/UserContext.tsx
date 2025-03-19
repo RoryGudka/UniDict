@@ -67,7 +67,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setProfile({ ...defaultUserProfile, ...(profile || {}) });
 
       if (process.env.NEXT_PUBLIC_ENVIRONMENT !== "local") {
-        posthog.identify(currentUser.userId, {
+        posthog.identify(currentUser.username, {
           email: currentUser.username,
           name: attributes.name,
         });
