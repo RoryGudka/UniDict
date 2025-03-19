@@ -1,9 +1,8 @@
 "use client";
 
 import { Box, Collapse, OutlinedInput } from "@mui/material";
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 
-import { useCookies } from "react-cookie";
 import { useDataContext } from "@/_contexts/DataContext";
 import { useDebouncedEffect } from "@/_lib/misc";
 
@@ -14,27 +13,13 @@ interface Props {
 const LanguageInputs: React.FC<Props> = ({ isLanguageOpen }) => {
   const { nativeLang, learningLang, setNativeLang, setLearningLang } =
     useDataContext();
-  const [cookies, setCookie] = useCookies(["languages"]);
   const [localNativeLang, setLocalNativeLang] = useState(nativeLang);
   const [localLearningLang, setLocalLearningLang] = useState(learningLang);
-
-  useEffect(() => {
-    if (cookies.languages?.learning && cookies.languages?.native) {
-      setNativeLang(cookies.languages.native);
-      setLocalNativeLang(cookies.languages.native);
-      setLearningLang(cookies.languages.learning);
-      setLocalLearningLang(cookies.languages.learning);
-    }
-  }, [cookies, setLearningLang, setNativeLang]);
 
   useDebouncedEffect(
     () => {
       setNativeLang(localNativeLang);
       setLearningLang(localLearningLang);
-      setCookie("languages", {
-        native: localNativeLang,
-        learning: localLearningLang,
-      });
     },
     500,
     [localNativeLang, localLearningLang]
