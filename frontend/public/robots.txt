@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://www.uni-dictionary.com
+
+# Sitemaps
+Sitemap: https://www.uni-dictionary.com/sitemap.xml
