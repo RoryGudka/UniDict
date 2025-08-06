@@ -1,7 +1,0 @@
-{
-  "type": "module",
-  "scripts": {
-    "build": "tsc && tsc-alias",
-    "dev": "node --loader tsconfig-paths/register --loader ts-node/esm src/server.ts"
-  }
-}
