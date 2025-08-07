@@ -12,8 +12,8 @@ export const useWebsocket = ({ onMessage, onError }: UseWebsocketProps) => {
   useEffect(() => {
     const isLocalhost = location.href.includes(":3000");
     const url = isLocalhost
-      ? `ws://${location.hostname}:4000`
-      : `wss://api.${location.hostname.replace("www.", "")}`;
+      ? `ws://${location.hostname}:8080`
+      : `wss://api.${location.hostname.replace("www.", "")}:8080`;
     const ws = new WebSocket(url);
 
     ws.onopen = () => {

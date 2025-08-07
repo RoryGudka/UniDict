@@ -4,7 +4,7 @@
   "type": "module",
   "description": "A TypeScript Express.js server with WebSocket support",
   "main": "dist/server.js",
-  "scripts": {
+"scripts": {
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "dev": "nodemon --exec tsx src/server.ts",

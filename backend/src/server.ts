@@ -1,13 +1,27 @@
 import { WebSocket, WebSocketServer } from "ws";
 
 import cors from "cors";
-import { createServer } from "http";
+import { createServer } from "https";
 import express from "express";
+import fs from "fs";
 import { handleWebsocketMessage } from "./websocket";
 import profileRoutes from "./routes/profile";
 
 const app = express();
-const server = createServer(app);
+
+let server;
+if (process.env.environment === "local") {
+  server = createServer(app);
+} else {
+  const sslOptions = {
+    key: fs.readFileSync("/etc/letsencrypt/api.uni-dictionary.com/privkey.pem"),
+    cert: fs.readFileSync(
+      "/etc/letsencrypt/api.uni-dictionary.com/fullchain.pem"
+    ),
+  };
+  server = createServer(sslOptions, app);
+}
+
 const wss = new WebSocketServer({ noServer: true });
 
 server.on("upgrade", (request, socket, head) => {
