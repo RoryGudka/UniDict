@@ -13,11 +13,7 @@ export const useWebsocket = ({ onMessage, onError }: UseWebsocketProps) => {
     const isLocalhost = location.href.includes(":3000");
     const url = isLocalhost
       ? `ws://${location.hostname}:8080`
-<<<<<<< HEAD
       : `wss://api.${location.hostname.replace("www.", "")}:8080`;
-=======
-      : `wss://api.${location.hostname.replace("www.", "")}`;
->>>>>>> d61b58c1d43ed6b99b8956ce24b7321c3ae31450
     const ws = new WebSocket(url);
 
     ws.onopen = () => {
